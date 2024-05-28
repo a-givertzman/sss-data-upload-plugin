@@ -1,4 +1,6 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use crate::error::Error;
 use crate::ApiServer;
 //use api_tools::client::api_query::*;
@@ -7,30 +9,30 @@ use crate::ApiServer;
 
 mod ship_general;
 mod table;
-//mod frames_physical;
+mod frames_physical;
 mod frames_theoretical;
 
 pub use ship_general::*;
 pub use table::*;
-//pub use frames_physical::*;
+pub use frames_physical::*;
 pub use frames_theoretical::*;
 
 /// Класс-коллекция таблиц. Проверяет данные и выполняет их запись
 pub struct Parser {
     data: String,
+    api_server: Rc<RefCell<ApiServer>>,
     general: Option<General>,    
     parsed: HashMap<String, Box<dyn Table>>,
-    api_server: ApiServer,
 }
 ///
 impl Parser {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>,) -> Self {
         Self {
             data,
+            api_server,
             general: None,
-            parsed: HashMap::<String, Box<dyn Table>>::new(),
-            api_server: ApiServer::new("sss-computing".to_owned()),
+            parsed: HashMap::<String, Box<dyn Table>>::new(),            
         }
     }
     /// Конвертация и проверка данных
@@ -59,18 +61,20 @@ impl Parser {
                 .to_owned();
             match tag {
                 "general" => {
-                    self.general = Some(General::new(body));
+                    self.general = Some(General::new(body, Rc::clone(&self.api_server)));
                 }
                 text => {
                     self.parsed.insert(
                         text.to_owned(),
                         match text {
                             "frames_theoretical" => {
-                                let table: Box::<dyn Table> = Box::new(TheoreticalFrame::new(body));
+                                let mut table: Box::<dyn Table> = Box::new(TheoreticalFrame::new(body));
+                                table.parse()?;
                                 table
                             },
                             "frames_physical" => {
-                                let table: Box::<dyn Table> = Box::new(TheoreticalFrame::new(body));
+                                let mut table: Box::<dyn Table> = Box::new(PhysicalFrame::new(body));
+                                table.parse()?;
                                 table
                             },
                             _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
@@ -87,32 +91,10 @@ impl Parser {
         println!("Parser write_to_db begin");
         let ship_id = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?.process()?;
         self.parsed.into_iter().for_each(|mut table| {
-            if let Err(error) = self.api_server.fetch(&table.1.to_sql(ship_id)) {
+            if let Err(error) = self.api_server.borrow_mut().fetch(&table.1.to_sql(ship_id)) {
                 println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
             }
         });
- /*       let mut request = ApiRequest::new(
-            "parent",
-            "0.0.0.0:8080",
-            "auth_token",
-            ApiQuery::new(
-                ApiQueryKind::Sql(ApiQuerySql::new("sss-computing", "")),
-                false,
-            ),
-            true,
-            false,
-        );
-        self.parsed.into_iter().for_each(|mut table| {
-            if let Err(error) = request.fetch(
-                &ApiQuery::new(
-                    ApiQueryKind::Sql(ApiQuerySql::new("sss-computing", table.1.to_sql(ship_id))),
-                    false,
-                ),
-                true,
-            ) {
-                println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
-            }
-        });*/
         println!("Parser write_to_db end");
         Ok(())
     }

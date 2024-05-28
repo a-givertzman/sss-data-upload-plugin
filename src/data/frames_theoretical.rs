@@ -1,6 +1,7 @@
 //! Структура с данными для theoretical_frame
 use crate::error::Error;
 use crate::Table;
+
 /// Структура с данными для theoretical_frame
 pub struct TheoreticalFrame {
     data: Option<String>,
@@ -20,18 +21,26 @@ impl TheoreticalFrame {
 impl Table for TheoreticalFrame {
     ///
     fn parse(&mut self) -> Result<(), Error> {
+        dbg!(&self.data);
         let data = self.data.take().ok_or(Error::FromString(
             "TheoreticalFrame data error: no data!".to_owned(),
         ))?;
+        let data = data
+            .replace(" ", "");
         let pairs: Vec<Vec<&str>> = data
             .split("\r\n")
-            .map(|line| line.split(';').collect() )
-            .collect();
+            .filter_map(|line| { if line.len() > 2 {
+                Some(line.split(';').collect())
+        } else {
+            None
+        } } ).collect();
         pairs.into_iter().for_each(|mut pair| {
-            self.parsed.push((
-                pair.pop().expect("TheoreticalFrame key error").to_owned(),
-                pair.pop().expect("TheoreticalFrame value error").to_owned(),
-            ));
+            if let Ok(second) = pair.pop().expect("TheoreticalFrame value error").parse::<i32>() {
+                self.parsed.push((
+                    pair.pop().expect("TheoreticalFrame key error").to_owned(),
+                    (second as f64 * 0.001).to_string(),
+                ));
+            }
         });
         Ok(())
     }
@@ -40,9 +49,8 @@ impl Table for TheoreticalFrame {
         let mut sql =
             "INSERT INTO theoretical_frame (ship_id, frame_index, pos_x) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
-            sql += &format!("({}, {}, {}),", id, line.0, line.1);
+            sql += &format!(" ({}, {}, {}),", id, line.0, line.1);
         });
-        sql.pop();
         sql.pop();
         sql.push(';');
         sql

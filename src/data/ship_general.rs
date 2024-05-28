@@ -1,27 +1,27 @@
 //! Структура с данными для ship_name и ship_parameters
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::error::Error;
-//use api_tools::client::api_query::*;
-//use api_tools::client::api_request::*;
-//use serde_json::Value;
 use crate::ApiServer;
 
 /// Структура с данными для ship_name и ship_parameters
 pub struct General {
     data: String,
-    api_server: ApiServer,
+    api_server: Rc<RefCell<ApiServer>>,
 }
 ///
 impl General {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>,) -> Self {
         Self {
             data,
-            api_server: ApiServer::new("sss-computing".to_owned()),
+            api_server,
         }
     }
     /// Создание записи в таблице ship_name.
     /// Возвращает id судна
-    pub fn process(mut self) -> Result<usize, Error> {
+    pub fn process(self) -> Result<usize, Error> {
         println!("General process begin");
         let data: Vec<&str> = self.data.split("\r\n").filter(|s| s.len() > 0).collect();
         let mut parsed = Vec::new();
@@ -84,7 +84,7 @@ impl General {
         } else {
             "NULL"
         };
-        self.api_server.fetch(&format!(
+        self.api_server.borrow_mut().fetch(&format!(
             "INSERT INTO ship_name AS s(name, project, year_of_built, place_of_built, IMO, MMSI) \
             VALUES ({name}, {project}, {year_of_built}, {place_of_built}, {imo}, {mmsi}) \
             ON CONFLICT ON CONSTRAINT ship_name_unique DO UPDATE \
@@ -93,6 +93,7 @@ impl General {
         ))?;
         let result = self
             .api_server
+            .borrow_mut()
             .fetch(&format!("SELECT id FROM ship_name WHERE name={name};").to_owned())?;
         println!("General ship_name ok");
         let id = result[0]
@@ -107,6 +108,7 @@ impl General {
         println!("General ship_id ok");
         self
             .api_server
+            .borrow_mut()
             .fetch(&format!("DELETE FROM ship_parameters WHERE ship_id={id};").to_owned())?;
         let mut sql =
             "INSERT INTO ship_parameters (ship_id, key, value, value_type, unit) VALUES"
@@ -125,7 +127,7 @@ impl General {
         }
         sql.pop();
         sql.push(';');
-        let _ = self.api_server.fetch(&sql)?;
+        let _ = self.api_server.borrow_mut().fetch(&sql)?;
         println!("General ship_parameters ok");
         println!("General process end");
         Ok(id as usize)
