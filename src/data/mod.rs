@@ -11,11 +11,13 @@ mod ship_general;
 mod table;
 mod frames_physical;
 mod frames_theoretical;
+mod bonjean_frame;
 
 pub use ship_general::*;
 pub use table::*;
 pub use frames_physical::*;
 pub use frames_theoretical::*;
+pub use bonjean_frame::*;
 
 /// Класс-коллекция таблиц. Проверяет данные и выполняет их запись
 pub struct Parser {
@@ -64,22 +66,14 @@ impl Parser {
                     self.general = Some(General::new(body, Rc::clone(&self.api_server)));
                 }
                 text => {
-                    self.parsed.insert(
-                        text.to_owned(),
-                        match text {
-                            "frames_theoretical" => {
-                                let mut table: Box::<dyn Table> = Box::new(TheoreticalFrame::new(body));
-                                table.parse()?;
-                                table
-                            },
-                            "frames_physical" => {
-                                let mut table: Box::<dyn Table> = Box::new(PhysicalFrame::new(body));
-                                table.parse()?;
-                                table
-                            },
-                            _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
-                        },
-                    );
+                    let mut table: Box::<dyn Table> = match text {
+                        "frames_theoretical" => Box::new(TheoreticalFrame::new(body)),
+                        "frames_physical" => Box::new(PhysicalFrame::new(body)),
+                        "bonjean" => Box::new(BonjeanFrame::new(body)),
+                        _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
+                    };
+                    table.parse()?;
+                    self.parsed.insert(text.to_owned(), table);
                 }
             }
         }
@@ -91,8 +85,10 @@ impl Parser {
         println!("Parser write_to_db begin");
         let ship_id = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?.process()?;
         self.parsed.into_iter().for_each(|mut table| {
-            if let Err(error) = self.api_server.borrow_mut().fetch(&table.1.to_sql(ship_id)) {
-                println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
+            for sql in table.1.to_sql(ship_id) {
+                if let Err(error) = self.api_server.borrow_mut().fetch(&sql) {
+                    println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
+                }
             }
         });
         println!("Parser write_to_db end");

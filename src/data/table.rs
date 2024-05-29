@@ -5,5 +5,5 @@ pub trait Table {
     ///
     fn parse(&mut self) -> Result<(), Error>;
     ///
-    fn to_sql(&mut self, id: usize) -> String;
+    fn to_sql(&mut self, id: usize) -> Vec<String>;
 }

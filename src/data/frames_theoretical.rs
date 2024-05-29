@@ -25,17 +25,23 @@ impl Table for TheoreticalFrame {
         let data = self.data.take().ok_or(Error::FromString(
             "TheoreticalFrame data error: no data!".to_owned(),
         ))?;
-        let data = data
-            .replace(" ", "");
+        let data = data.replace(" ", "");
         let pairs: Vec<Vec<&str>> = data
             .split("\r\n")
-            .filter_map(|line| { if line.len() > 2 {
-                Some(line.split(';').collect())
-        } else {
-            None
-        } } ).collect();
+            .filter_map(|line| {
+                if line.len() > 2 {
+                    Some(line.split(';').collect())
+                } else {
+                    None
+                }
+            })
+            .collect();
         pairs.into_iter().for_each(|mut pair| {
-            if let Ok(second) = pair.pop().expect("TheoreticalFrame value error").parse::<i32>() {
+            if let Ok(second) = pair
+                .pop()
+                .expect("TheoreticalFrame value error")
+                .parse::<i32>()
+            {
                 self.parsed.push((
                     pair.pop().expect("TheoreticalFrame key error").to_owned(),
                     (second as f64 * 0.001).to_string(),
@@ -45,7 +51,7 @@ impl Table for TheoreticalFrame {
         Ok(())
     }
     ///
-    fn to_sql(&mut self, id: usize) -> String {
+    fn to_sql(&mut self, id: usize) -> Vec<String> {
         let mut sql =
             "INSERT INTO theoretical_frame (ship_id, frame_index, pos_x) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
@@ -53,6 +59,6 @@ impl Table for TheoreticalFrame {
         });
         sql.pop();
         sql.push(';');
-        sql
+        vec![sql]
     }
 }
