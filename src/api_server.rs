@@ -3,6 +3,7 @@ use crate::error::Error;
 use api_tools::client::api_query::*;
 use api_tools::client::api_request::*;
 use serde_json::Value;
+use std::{thread, time};
 
 pub struct ApiServer {
     database: String,
@@ -23,6 +24,8 @@ impl ApiServer {
                 &ApiQuery::new(ApiQueryKind::Sql(ApiQuerySql::new(self.database.clone(), sql)), false),
                 true,
             )?;
+            let millis = time::Duration::from_millis(100);
+            thread::sleep(millis);
             dbg!(sql, &String::from_utf8(result.clone()));
             let json: serde_json::Value = serde_json::from_slice(&result)?;
             let error_mess = json

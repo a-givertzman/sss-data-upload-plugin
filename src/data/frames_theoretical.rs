@@ -20,30 +20,21 @@ impl TheoreticalFrame {
 ///
 impl Table for TheoreticalFrame {
     ///
+    fn data(&mut self) -> Option<String> {
+        self.data.take()
+    }
+    ///
     fn parse(&mut self) -> Result<(), Error> {
-        dbg!(&self.data);
-        let data = self.data.take().ok_or(Error::FromString(
-            "TheoreticalFrame data error: no data!".to_owned(),
-        ))?;
-        let data = data.replace(" ", "");
-        let pairs: Vec<Vec<&str>> = data
-            .split("\r\n")
-            .filter_map(|line| {
-                if line.len() > 2 {
-                    Some(line.split(';').collect())
-                } else {
-                    None
-                }
-            })
-            .collect();
-        pairs.into_iter().for_each(|mut pair| {
-            if let Ok(second) = pair
+    //    dbg!(&self.data);
+        let data = self.split_data()?;
+        data.into_iter().for_each(|mut row| {
+            if let Ok(second) = row
                 .pop()
                 .expect("TheoreticalFrame value error")
                 .parse::<i32>()
             {
                 self.parsed.push((
-                    pair.pop().expect("TheoreticalFrame key error").to_owned(),
+                    row.pop().expect("TheoreticalFrame key error").to_owned(),
                     (second as f64 * 0.001).to_string(),
                 ));
             }

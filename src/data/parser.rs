@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use crate::error::Error;
 use crate::ApiServer;
+use crate::StrengthForceLimit;
 use crate::Table;
 use crate::LoadConstant;
 use crate::General;
@@ -65,9 +66,9 @@ impl Parser {
                         "frames_physical" => Box::new(PhysicalFrame::new(body)),
                         "bonjean" => Box::new(BonjeanFrame::new(body)),
                         "weight_distribution" => Box::new(LoadConstant::new(body)),
-  //                      "strength_limits_sea" => Box::new( ::new(body)),
- //                       "strength_limits_harbor" => Box::new( ::new(body)),
-//                        "compartments" => Box::new( ::new(body)),
+                        "strength_limits_sea" => Box::new(StrengthForceLimit::new("sea\r\n".to_owned() + &body)),
+                        "strength_limits_harbor" => Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body)),
+        //                "compartments" => Box::new( ::new(body)),
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;

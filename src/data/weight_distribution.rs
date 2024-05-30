@@ -20,19 +20,17 @@ impl LoadConstant {
 ///
 impl Table for LoadConstant {
     ///
+    fn data(&mut self) -> Option<String> {
+        self.data.take()
+    }
+    ///
     fn parse(&mut self) -> Result<(), Error> {
-        dbg!(&self.data);
-        let data = self.data.take().ok_or(Error::FromString(
-            "LoadConstant data error: no data!".to_owned(),
-        ))?;
-        let data = data.replace(" ", "");
-        let data = data.replace(",", ".");
-        let mut data: Vec<&str> = data.split("\r\n").collect();
+    //    dbg!(&self.data);
+        let mut data = self.split_data()?;
         data.remove(0);
         let mut parsed: Vec<(String, String, String)> = data
             .into_iter()
             .filter_map(|line| {
-                let line: Vec<_> = line.split(';').collect();
                 if line.len() == 3 {
                     Some((line[0].to_owned(), line[1].to_owned(), line[2].to_owned(),))
                 } else {
@@ -46,7 +44,7 @@ impl Table for LoadConstant {
     }
     ///
     fn to_sql(&mut self, id: usize) -> Vec<String> {
-        dbg!(&self.parsed);
+   //     dbg!(&self.parsed);
         let mut sql = "INSERT INTO load_constant (ship_id, frame_start_index, frame_end_index, mass) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
             sql += &format!(" ({}, {}, {}, {}),", id, line.0, line.1, line.2);

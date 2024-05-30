@@ -20,41 +20,32 @@ impl PhysicalFrame {
 ///
 impl Table for PhysicalFrame {
     ///
+    fn data(&mut self) -> Option<String> {
+        self.data.take()
+    }
+    ///
     fn parse(&mut self) -> Result<(), Error> {
-        dbg!(&self.data);
-        let data = self.data.take().ok_or(Error::FromString(
-            "PhysicalFrame data error: no data!".to_owned(),
-        ))?;
-        let data = data.replace(" ", "");
-        let pairs: Vec<Vec<&str>> = data
-            .split("\r\n")
-            .filter_map(|line| {
-                if line.len() > 2 {
-                    Some(line.split(';').collect())
-                } else {
-                    None
-                }
-            })
-            .collect();
-        pairs.into_iter().for_each(|mut pair| {
-            dbg!(&pair);
-            if let Ok(second) = pair
+    //    dbg!(&self.data);
+        let data = self.split_data()?;
+        data.into_iter().for_each(|mut row| {
+     //       dbg!(&row);
+            if let Ok(second) = row
                 .pop()
                 .expect("PhysicalFrame value error")
                 .parse::<i32>()
             {
                 self.parsed.push((
-                    pair.pop().expect("PhysicalFrame key error").to_owned(),
+                    row.pop().expect("PhysicalFrame key error").to_owned(),
                     (second as f64 * 0.001).to_string(),
                 ));
             }
         });
-        dbg!(&self.parsed);
+      //  dbg!(&self.parsed);
         Ok(())
     }
     ///
     fn to_sql(&mut self, id: usize) -> Vec<String> {
-        dbg!(&self.parsed);
+   //     dbg!(&self.parsed);
         let mut sql = "INSERT INTO physical_frame (ship_id, frame_index, pos_x) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
             sql += &format!(" ({}, {}, {}),", id, line.0, line.1);
