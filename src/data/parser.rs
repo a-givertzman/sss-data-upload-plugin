@@ -83,13 +83,23 @@ impl Parser {
     pub fn write_to_db(mut self) -> Result<(), Error> {
         println!("Parser write_to_db begin");
         let ship_id = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?.process()?;
+        let mut full_sql = "DO $$ BEGIN ".to_owned();
+  /*      self.parsed.into_iter().next().map(|(_, mut table)| {
+            full_sql += &table.to_sql(ship_id)[0];
+        });
+*/
         self.parsed.into_iter().for_each(|mut table| {
             for sql in table.1.to_sql(ship_id) {
-                if let Err(error) = self.api_server.borrow_mut().fetch(&sql) {
+            full_sql += &sql;
+       /*       if let Err(error) = self.api_server.borrow_mut().fetch(&sql) {
                     println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
-                }
+                }*/
             }
         });
+        full_sql += " COMMIT; END$$;";
+        if let Err(error) = self.api_server.borrow_mut().fetch(&full_sql) {
+            println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
+        }
         println!("Parser write_to_db end");
         Ok(())
     }

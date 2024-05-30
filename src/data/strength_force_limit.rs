@@ -64,10 +64,10 @@ impl Table for StrengthForceLimit {
         ) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
             let frame_real_index = &line.0;
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', {limit_area}, 'bending_moment'),", line.1);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', {limit_area}, 'bending_moment'),", line.2);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', {limit_area}, 'shear_force'),", line.3);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', {limit_area}, 'shear_force'),", line.4);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'bending_moment'),", line.1);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'bending_moment'),", line.2);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'shear_force'),", line.3);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'shear_force'),", line.4);
         });
         sql.pop();
         sql.push(';');
