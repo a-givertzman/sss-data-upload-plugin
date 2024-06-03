@@ -58,7 +58,9 @@ impl Parser {
                 .to_owned();
             match tag {
                 "general" => {
-                    self.general = Some(General::new(body, Rc::clone(&self.api_server)));
+                    let mut general = General::new(body, Rc::clone(&self.api_server));
+                    general.parse()?;
+                    self.general = Some(general);
                 }
                 text => {
                     let mut table: Box::<dyn Table> = match text {
@@ -79,7 +81,7 @@ impl Parser {
         println!("Parser convert end");
         Ok(())
     }
-    /// Запись данных в БД
+/*     /// Запись данных в БД
     pub fn write_to_db(mut self) -> Result<(), Error> {
         println!("Parser write_to_db begin");
         let ship_id = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?.process()?;
@@ -97,6 +99,25 @@ impl Parser {
             }
         });
         full_sql += " COMMIT; END$$;";
+        if let Err(error) = self.api_server.borrow_mut().fetch(&full_sql) {
+            println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
+        }
+        println!("Parser write_to_db end");
+        Ok(())
+    } */
+    /// Запись данных в БД
+    pub fn write_to_db(mut self) -> Result<(), Error> {
+        println!("Parser write_to_db begin");
+        let mut general = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?;
+        let ship_id = general.ship_id()?;
+        let mut full_sql = "DO $$ BEGIN ".to_owned();
+        general.to_sql(ship_id).iter().for_each(|sql| {
+            full_sql += sql;
+        });
+        self.parsed.into_iter().next().map(|(_, mut table)| {
+            full_sql += &table.to_sql(ship_id)[0];
+        });
+        full_sql += "END$$;";
         if let Err(error) = self.api_server.borrow_mut().fetch(&full_sql) {
             println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
         }

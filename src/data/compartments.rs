@@ -50,7 +50,9 @@ impl Table for Compartment {
     }
     ///
     fn to_sql(&mut self, id: usize) -> Vec<String> {
-        dbg!(&self.parsed);
+    //    dbg!(&self.parsed);
+        let mut result = Vec::new();
+        result.push(format!("DELETE FROM strength_force_limit WHERE ship_id={id};"));
         let limit_area = self.limit_area.take().expect("Compartment to_sql limit_area error");
         let mut sql = "INSERT INTO strength_force_limit ( \
             ship_id, \
@@ -69,7 +71,8 @@ impl Table for Compartment {
         });
         sql.pop();
         sql.push(';');
-        dbg!(&sql);
-        vec![sql]
+    //    dbg!(&sql);
+        result.push(sql);
+        result
     }
 }

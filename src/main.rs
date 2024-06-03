@@ -29,11 +29,13 @@ fn main() {
     if let Err(error) = parser.convert() {
         let mut stdout = io::stdout().lock();
         stdout.write_all(error.to_string().as_bytes()).unwrap();
+ //       println!("{}", error.to_string());
         return;
     }
     if let Err(error) = parser.write_to_db() {
         let mut stdout = io::stdout().lock();
         stdout.write_all(error.to_string().as_bytes()).unwrap();
+ //       println!("{}", error.to_string());
         return;
     }
 }
