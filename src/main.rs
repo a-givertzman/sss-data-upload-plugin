@@ -17,7 +17,8 @@ fn main() {
     //    let data1 = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\example.json");
     //    let data = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\result1.json");
     //    let data = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\result2.json");
-     let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/result3.json");
+    // let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/result3.json");
+     let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/hydrostatic.json");
     //   let mut stdout = io::stdout().lock();
     //   stdout.write_all(data.as_bytes()).unwrap();
     //  let mut data = String::new();
