@@ -4,7 +4,7 @@
             "id": "0",
             "type": "csv",
             "tag": "general",
-            "body": "Name of ship;NV Brother 02\r\nType of navigation area;R1\r\nType of ship;General cargo ship\r\nLBP [m];84,97\r\nL.O.A [m];91,94\r\nShip hull width [m];15,3\r\n"
+            "body": "Name of ship;NV Brother 02\r\nType of navigation area;R1\r\nType of ship;General cargo ship\r\nLBP;[m];84,97\r\nL.O.A;[m];91,94\r\nShip hull width;[m];15,3\r\nMMSI;235762000\r\n"
         },
         {
             "id": "1",

@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use crate::error::Error;
 use crate::ApiServer;
+use crate::HydrostaticCurves;
 use crate::StrengthForceLimit;
 use crate::Table;
 use crate::LoadConstant;
@@ -58,7 +59,9 @@ impl Parser {
                 .to_owned();
             match tag {
                 "general" => {
-                    self.general = Some(General::new(body, Rc::clone(&self.api_server)));
+                    let mut general = General::new(body, Rc::clone(&self.api_server));
+                    general.parse()?;
+                    self.general = Some(general);
                 }
                 text => {
                     let mut table: Box::<dyn Table> = match text {
@@ -69,6 +72,7 @@ impl Parser {
                         "strength_limits_sea" => Box::new(StrengthForceLimit::new("sea\r\n".to_owned() + &body)),
                         "strength_limits_harbor" => Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body)),
         //                "compartments" => Box::new( ::new(body)),
+                        "hydrostatic_curves" => Box::new(HydrostaticCurves::new(body)),  
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
@@ -82,21 +86,17 @@ impl Parser {
     /// Запись данных в БД
     pub fn write_to_db(mut self) -> Result<(), Error> {
         println!("Parser write_to_db begin");
-        let ship_id = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?.process()?;
+        let mut general = self.general.take().ok_or(Error::FromString("Parser write_to_db error: no general".to_owned()))?;
+        let ship_id = general.ship_id()?;
         let mut full_sql = "DO $$ BEGIN ".to_owned();
-  /*      self.parsed.into_iter().next().map(|(_, mut table)| {
-            full_sql += &table.to_sql(ship_id)[0];
+        general.to_sql(ship_id).iter().for_each(|sql| {
+            full_sql += sql;
         });
-*/
-        self.parsed.into_iter().for_each(|mut table| {
-            for sql in table.1.to_sql(ship_id) {
-            full_sql += &sql;
-       /*       if let Err(error) = self.api_server.borrow_mut().fetch(&sql) {
-                    println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
-                }*/
-            }
+        self.parsed.into_iter().next().map(|(_, mut table)| {
+            table.to_sql(ship_id).into_iter().for_each(|sql| full_sql += &sql );
         });
-        full_sql += " COMMIT; END$$;";
+        full_sql += " END$$;";
+        dbg!(&full_sql);
         if let Err(error) = self.api_server.borrow_mut().fetch(&full_sql) {
             println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
         }

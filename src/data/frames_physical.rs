@@ -46,12 +46,15 @@ impl Table for PhysicalFrame {
     ///
     fn to_sql(&mut self, id: usize) -> Vec<String> {
    //     dbg!(&self.parsed);
+        let mut result = Vec::new();
+        result.push(format!("DELETE FROM physical_frame WHERE ship_id={id};"));
         let mut sql = "INSERT INTO physical_frame (ship_id, frame_index, pos_x) VALUES".to_owned();
         self.parsed.iter_mut().for_each(|line| {
             sql += &format!(" ({}, {}, {}),", id, line.0, line.1);
         });
         sql.pop();
         sql.push(';');
-        vec![sql]
+        result.push(sql);
+        result
     }
 }

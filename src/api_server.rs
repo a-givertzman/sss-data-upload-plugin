@@ -26,7 +26,6 @@ impl ApiServer {
             )?;
             let millis = time::Duration::from_millis(100);
             thread::sleep(millis);
-            dbg!(sql, &String::from_utf8(result.clone()));
             let json: serde_json::Value = serde_json::from_slice(&result)?;
             let error_mess = json
                 .get("error")
@@ -36,6 +35,7 @@ impl ApiServer {
                 .as_str()
                 .ok_or(format!("ApiServer can't get error message str:{}", json))?;
             if error_mess.len() > 0 {
+                dbg!(sql, &String::from_utf8(result.clone()));
                 return Err( Error::FromString( error_mess.to_owned() ));
             }
             let data = json

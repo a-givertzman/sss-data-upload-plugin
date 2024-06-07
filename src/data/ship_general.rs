@@ -4,55 +4,65 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::error::Error;
-use crate::ApiServer;
+use crate::{ApiServer, Table};
 
 /// Структура с данными для ship_name и ship_parameters
 pub struct General {
-    data: String,
+    data: Option<String>,
+    parsed: HashMap<String, (String, Option<String>)>,
     api_server: Rc<RefCell<ApiServer>>,
 }
 ///
 impl General {
     ///
     pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
-        Self { data, api_server }
-    }
-    /// Создание записи в таблице ship_name.
-    /// Возвращает id судна
-    pub fn process(self) -> Result<usize, Error> {
-        println!("General process begin");
-        let data: Vec<&str> = self.data.split("\r\n").filter(|s| s.len() > 0).collect();
-        let mut map = HashMap::new();
-        for line in &data {
-            let line = line.split(';').collect::<Vec<&str>>();
-            if let (Some(v1), Some(v2)) = (line.first(), line.last()) {
-                map.insert(v1.to_owned(), v2.to_owned());
-            }
+        Self {
+            data: Some(data),
+            parsed: HashMap::new(),
+            api_server,
         }
+    }
+    ///
+    pub fn ship_id(&mut self) -> Result<usize, Error> {
         println!("General parse ok");
         let name = format!(
             "'{}'",
-            map.get(&"Name of ship").ok_or(Error::FromString(format!(
+            self.parsed.get("Name of ship").ok_or(Error::FromString(format!(
                 "parse_general no 'Name of ship'!"
-            )))?
+            )))?.0
         );
-        let project = map.get(&"Name of project").unwrap_or(&"NULL");
-        let year_of_built = map.get(&"Year of built").unwrap_or(&"NULL");
-        let place_of_built = map.get(&"Place of built").unwrap_or(&"NULL");
-        let imo = map.get(&"IMO number").unwrap_or(&"NULL");
-        let mmsi = map.get(&"MMSI").unwrap_or(&"NULL");
-        self.api_server.borrow_mut().fetch(&format!(
-            "INSERT INTO ship_name AS s(name, project, year_of_built, place_of_built, IMO, MMSI) \
-            VALUES ({name}, {project}, {year_of_built}, {place_of_built}, {imo}, {mmsi}) \
-            ON CONFLICT ON CONSTRAINT ship_name_unique DO UPDATE \
-            SET project={project}, year_of_built={year_of_built}, place_of_built={place_of_built}, IMO={imo}, MMSI={mmsi} \
-            WHERE s.name={name};"
-        ))?;
+        let mut sql_name = "name".to_owned();
+        let mut sql_values = format!("{name}");
+        if let Some(project) = self.parsed.get("Name of project") {
+            sql_name += &format!(", project");
+            sql_values += &format!(", '{}'", project.0);
+        }
+        if let Some(year_of_built) = self.parsed.get("Year of built") {
+            sql_name += &format!(", year_of_built");
+            sql_values += &format!(", {}", year_of_built.0.parse::<i32>()?);
+        }
+        if let Some(place_of_built) = self.parsed.get("Place of built") {
+            sql_name += &format!(", place_of_built");
+            sql_values += &format!(", '{}'", place_of_built.0);
+        }
+        if let Some(imo) = self.parsed.get("IMO number") {
+            sql_name += &format!(", IMO");
+            sql_values += &format!(", {}", imo.0.parse::<i32>()?);
+        }
+        if let Some(mmsi) = self.parsed.get("MMSI") {
+            sql_name += &format!(", MMSI");
+            sql_values += &format!(", {}", mmsi.0.parse::<i32>()?);
+        }  
+        let sql = "INSERT INTO ship_name (".to_owned() + 
+        &sql_name + ") VALUES (" + &sql_values + ");";
+        self
+            .api_server
+            .borrow_mut()
+            .fetch(&sql)?;        
         let result = self
             .api_server
             .borrow_mut()
-            .fetch(&format!("SELECT id FROM ship_name WHERE name={name};").to_owned())?;
-        println!("General ship_name ok");
+            .fetch(&format!(" SELECT id FROM ship_name WHERE name={name}; "))?;
         let id = result[0]
             .get("id")
             .ok_or(Error::FromString(format!(
@@ -62,32 +72,65 @@ impl General {
             .ok_or(Error::FromString(format!(
                 "parse_general wrong ship_id type in reply"
             )))?;
-        println!("General ship_id ok");
-        self.api_server
-            .borrow_mut()
-            .fetch(&format!("DELETE FROM ship_parameters WHERE ship_id={id};").to_owned())?;
-        let mut sql =
-            "INSERT INTO ship_parameters (ship_id, key, value, value_type, unit) VALUES".to_owned();
+        Ok(id as usize)
+    }
+}
 
+impl Table for General {
+    ///
+    fn data(&mut self) -> Option<String> {
+        self.data.take()
+    }
+    ///
+    fn parse(&mut self) -> Result<(), Error> {
+        let binding = self
+            .data
+            .take()
+            .ok_or(Error::FromString(
+                "General parse error: no data!".to_owned(),
+            ))?;
+        let data: Vec<Vec<&str>> = binding
+            .split("\r\n")
+            .filter(|s| s.len() > 0)
+            .map(|s| s.split(';').collect())
+            .collect();
         for line in &data {
-            let mut line = line.split(';').filter(|line| line.len() >= 2 ).collect::<Vec<&str>>();
-            let value = line
-            .pop()
-            .expect(&format!("General process line error!"));
-            let key = line.remove(0);
-            let unit = line.pop().unwrap_or("NULL");
+            match line.len() {
+                2 => self.parsed.insert(line[0].to_owned(), (line[1].to_owned(), None)),
+                3 => self.parsed.insert(line[0].to_owned(), (line[2].to_owned(), Some(line[1].to_owned()))),
+                _ => return Err(Error::FromString(
+                    "General parse error: no data! line:{line}".to_owned(),
+                )),                
+            };
+        }
+        Ok(())
+    }
+    ///
+    fn to_sql(&mut self, id: usize) -> Vec<String> {
+        let mut result = Vec::new();
+        result.push(format!("DELETE FROM ship_parameters WHERE ship_id={id};"));
+        let mut sql1 =
+            "INSERT INTO ship_parameters (ship_id, key, value, value_type) VALUES".to_owned();
+        let mut sql2 =
+            "INSERT INTO ship_parameters (ship_id, key, value, value_type, unit) VALUES".to_owned();
+        for (key, (value, unit)) in &self.parsed {
             let value_type = if value.parse::<f64>().is_ok() {
                 "real"
             } else {
                 "text"
             };
-            sql += &format!(" ({id}, '{key}', '{value}', '{value_type}', '{unit}'),").to_owned();
+            if let Some(unit) = unit {
+                sql2 += &format!(" ({id}, '{key}', '{value}', '{value_type}', '{unit}'),").to_owned();
+            } else {
+                sql1 += &format!(" ({id}, '{key}', '{value}', '{value_type}'),").to_owned();
+            }
         }
-        sql.pop();
-        sql.push(';');
-        let _ = self.api_server.borrow_mut().fetch(&sql)?;
-        println!("General ship_parameters ok");
-        println!("General process end");
-        Ok(id as usize)
+        sql1.pop();
+        sql1.push(';');
+        sql2.pop();
+        sql2.push(';');
+        result.push(sql1);
+        result.push(sql2);
+        result
     }
 }

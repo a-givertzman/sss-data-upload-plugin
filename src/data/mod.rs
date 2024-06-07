@@ -6,6 +6,7 @@ mod frames_theoretical;
 mod bonjean_frame;
 mod weight_distribution;
 mod strength_force_limit;
+mod hydrostatic_curves;
 
 pub use ship_general::*;
 pub use table::*;
@@ -15,3 +16,4 @@ pub use frames_theoretical::*;
 pub use bonjean_frame::*;
 pub use weight_distribution::*;
 pub use strength_force_limit::*;
+pub use hydrostatic_curves::*;
