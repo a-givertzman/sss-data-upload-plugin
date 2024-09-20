@@ -12,9 +12,12 @@ pub struct HydrostaticCurves {
     /// зависимости от объемного водоизмещения,
     ///  V, м3 | Xc, м | Yc, м, | Zc, м  ship_id, key, value_x, value_y, value_z)
     center_draught: Vec<(f64, f64, f64, f64)>,
+    /// Площадь ватерлинии,
+    ///  V, м3 | S, м^2  ship_id, key, value
+    waterline_area: Vec<(f64, f64)>,
     /// Абсцисса центра тяжести площади ватерлинии,
     ///  V, м3 | Xf, м  ship_id, key, value
-    center_waterline: Vec<(f64, f64)>, 
+    center_waterline: Vec<(f64, f64)>,
     /// Длинна судна по ватерлинии в зависимости от осадки
     /// d, м | z, м  ship_id, key, value
     waterline_length: Vec<(f64, f64)>,   
@@ -36,6 +39,7 @@ impl HydrostaticCurves {
             data: Some(data),
             mean_draught: Vec::new(), 
             center_draught: Vec::new(),
+            waterline_area: Vec::new(),
             center_waterline: Vec::new(),
             waterline_length: Vec::new(),
             waterline_breadth: Vec::new(),
@@ -78,6 +82,7 @@ impl Table for HydrostaticCurves {
             let volume = row[2];
             self.mean_draught.push((volume, draught));
             self.center_draught.push((volume, row[3], 0., row[4]));
+            self.waterline_area.push((volume, row[5]));  
             self.center_waterline.push((volume, row[6]));  
             self.waterline_length.push((draught, row[17]));
             self.waterline_breadth.push((draught, row[18]));
@@ -102,6 +107,7 @@ impl Table for HydrostaticCurves {
         //    dbg!(&center_draught);
             result.push(center_draught);
         }
+        result.append(&mut self.data_to_sql(&self.waterline_area, "waterline_area", id));
         result.append(&mut self.data_to_sql(&self.center_waterline, "center_waterline", id));
         result.append(&mut self.data_to_sql(&self.waterline_length, "waterline_length", id));
         result.append(&mut self.data_to_sql(&self.waterline_breadth, "waterline_breadth", id));
