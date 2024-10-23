@@ -42,12 +42,12 @@ impl Table for TheoreticalFrame {
         Ok(())
     }
     ///
-    fn to_sql(&mut self, id: usize) -> Vec<String> {
+    fn to_sql(&self, id: usize) -> Vec<String> {
         let mut result = Vec::new();
-        result.push(format!("DELETE FROM theoretical_frame WHERE ship_id={id};"));
+        result.push(format!("DELETE FROM theoretical_frame WHERE ship_id={id};\n\n"));
         let mut sql =
-            "INSERT INTO theoretical_frame (ship_id, frame_index, pos_x) VALUES".to_owned();
-        self.parsed.iter_mut().for_each(|line| {
+            "INSERT INTO theoretical_frame\n  (ship_id, frame_index, pos_x)\nVALUES\n".to_owned();
+        self.parsed.iter().for_each(|line| {
             sql += &format!(" ({}, {}, {}),", id, line.0, line.1);
         });
         sql.pop();

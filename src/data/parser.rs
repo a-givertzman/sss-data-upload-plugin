@@ -20,6 +20,7 @@ pub struct Parser {
     data: String,
     api_server: Rc<RefCell<ApiServer>>,
     general: Option<General>,    
+    physical_frame: Option<Rc<PhysicalFrame>>,
     parsed: HashMap<String, Box<dyn Table>>,
 }
 ///
@@ -30,6 +31,7 @@ impl Parser {
             data,
             api_server,
             general: None,
+            physical_frame: None,
             parsed: HashMap::<String, Box<dyn Table>>::new(),            
         }
     }
@@ -63,12 +65,16 @@ impl Parser {
                     general.parse()?;
                     self.general = Some(general);
                 }
+                "physical_frame" => {
+                    let mut physical_frame = PhysicalFrame::new(body);
+                    physical_frame.parse()?;
+                    self.physical_frame = Some(Rc::new(physical_frame));
+                }
                 text => {
                     let mut table: Box::<dyn Table> = match text {
                         "frames_theoretical" => Box::new(TheoreticalFrame::new(body)),
-                        "frames_physical" => Box::new(PhysicalFrame::new(body)),
                         "bonjean" => Box::new(BonjeanFrame::new(body)),
-                        "weight_distribution" => Box::new(LoadConstant::new(body)),
+                        "load_constant" => Box::new(LoadConstant::new(body, Rc::clone(&self.physical_frame.clone().ok_or(Error::FromString(format!("Parser error: physical_frame")))?))),
                         "strength_limits_sea" => Box::new(StrengthForceLimit::new("sea\r\n".to_owned() + &body)),
                         "strength_limits_harbor" => Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body)),
         //                "compartments" => Box::new( ::new(body)),
@@ -92,15 +98,34 @@ impl Parser {
         general.to_sql(ship_id).iter().for_each(|sql| {
             full_sql += sql;
         });
-        self.parsed.into_iter().next().map(|(_, mut table)| {
-            table.to_sql(ship_id).into_iter().for_each(|sql| full_sql += &sql );
+        self.parsed.iter().next().map(|(_, table)| {
+            table.to_sql(ship_id).iter().for_each(|sql| full_sql += &sql );
         });
         full_sql += " END$$;";
-        dbg!(&full_sql);
+     //   dbg!(&full_sql);
         if let Err(error) = self.api_server.borrow_mut().fetch(&full_sql) {
             println!("{}", format!("Parser write_to_db error:{}", error.to_string()));
         }
         println!("Parser write_to_db end");
+        Ok(())
+    }
+    /// Запись данных в виде скриптов для БД
+    pub fn write_to_file(self) -> Result<(), Error> {
+        println!("Parser write_to_file begin");
+        if let Some(general) = self.general {
+            let ship_id = general.ship_id()?;
+            general.to_file(ship_id);  
+            if let Some(physical_frame) = self.physical_frame {
+                physical_frame.to_file(ship_id);
+            }
+            self.parsed.iter().next().map(|(_, table)| {
+                table.to_file(ship_id);
+            });
+        }
+        else { 
+            return Err(Error::FromString("Parser write_to_file error: no general".to_owned()));
+        }
+        println!("Parser write_to_file end");
         Ok(())
     }
 }

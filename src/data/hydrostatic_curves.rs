@@ -93,15 +93,16 @@ impl Table for HydrostaticCurves {
         Ok(())
     }
     ///
-    fn to_sql(&mut self, id: usize) -> Vec<String> {
+    fn to_sql(&self, id: usize) -> Vec<String> {
         let mut result = Vec::new();
         result.append(&mut self.data_to_sql(&self.mean_draught, "mean_draught", id));
         {
-            result.push(format!(" DELETE FROM center_draught WHERE ship_id={id};"));
-            let mut center_draught = " INSERT INTO center_draught (ship_id, key, value_x, value_y, value_z) VALUES".to_owned();
+            result.push(format!(" DELETE FROM center_draught WHERE ship_id={id};\n\n"));
+            let mut center_draught = " INSERT INTO center_draught\n  (ship_id, key, value_x, value_y, value_z)\nVALUES\n".to_owned();
             self.center_draught.iter().for_each(|(k, x, y, z)| {
-                center_draught += &format!(" ({id}, {k}, {x}, {y}, {z}),");
+                center_draught += &format!("  ({id}, {k}, {x}, {y}, {z}),\n");
             });
+            center_draught.pop();
             center_draught.pop();
             center_draught.push(';');
         //    dbg!(&center_draught);

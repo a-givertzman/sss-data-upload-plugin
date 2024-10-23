@@ -51,11 +51,11 @@ impl Table for StrengthForceLimit {
         Ok(())
     }
     ///
-    fn to_sql(&mut self, id: usize) -> Vec<String> {
+    fn to_sql(&self, id: usize) -> Vec<String> {
     //    dbg!(&self.parsed);
         let mut result = Vec::new();
-        result.push(format!("DELETE FROM strength_force_limit WHERE ship_id={id};"));
-        let limit_area = self.limit_area.take().expect("StrengthForceLimit to_sql limit_area error");
+        result.push(format!("DELETE FROM strength_force_limit WHERE ship_id={id};\n\n"));
+        let limit_area = self.limit_area.as_ref().expect("StrengthForceLimit to_sql limit_area error").to_owned();
         let mut sql = "INSERT INTO strength_force_limit ( \
             ship_id, \
             frame_real_index, \
@@ -63,14 +63,15 @@ impl Table for StrengthForceLimit {
             limit_type, \
             limit_area, \
             force_type  \
-        ) VALUES".to_owned();
-        self.parsed.iter_mut().for_each(|line| {
+        ) VALUES\n".to_owned();
+        self.parsed.iter().for_each(|line| {
             let frame_real_index = &line.0;
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'bending_moment'),", line.1);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'bending_moment'),", line.2);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'shear_force'),", line.3);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'shear_force'),", line.4);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'bending_moment'),\n", line.1);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'bending_moment'),\n", line.2);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', '{limit_area}', 'shear_force'),\n", line.3);
+            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', '{limit_area}', 'shear_force'),\n", line.4);
         });
+        sql.pop();
         sql.pop();
         sql.push(';');
     //    dbg!(&sql);

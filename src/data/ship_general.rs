@@ -22,9 +22,10 @@ impl General {
             api_server,
         }
     }
-    ///
-    pub fn ship_id(&mut self) -> Result<usize, Error> {
-        println!("General parse ok");
+    //
+    pub fn ship_id(&self) -> Result<usize, Error> {
+        Ok(2)
+  /*      println!("General parse ok");
         let name = format!(
             "'{}'",
             self.parsed.get("Name of ship").ok_or(Error::FromString(format!(
@@ -72,7 +73,7 @@ impl General {
             .ok_or(Error::FromString(format!(
                 "parse_general wrong ship_id type in reply"
             )))?;
-        Ok(id as usize)
+        Ok(id as usize)*/
     }
 }
 
@@ -106,7 +107,7 @@ impl Table for General {
         Ok(())
     }
     ///
-    fn to_sql(&mut self, id: usize) -> Vec<String> {
+    fn to_sql(&self, id: usize) -> Vec<String> {
         let mut result = Vec::new();
         result.push(format!("DELETE FROM ship_parameters WHERE ship_id={id};"));
         let mut sql1 =

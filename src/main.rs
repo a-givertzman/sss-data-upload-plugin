@@ -17,8 +17,9 @@ fn main() {
     //    let data1 = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\example.json");
     //    let data = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\result1.json");
     //    let data = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\result2.json");
+    let data = include_str!("D:\\myProgr\\projects\\rust\\sss-data-upload-plugin\\src\\bin\\result5.json");
     // let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/result3.json");
-     let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/hydrostatic.json");
+    // let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/hydrostatic.json");
     //   let mut stdout = io::stdout().lock();
     //   stdout.write_all(data.as_bytes()).unwrap();
     //  let mut data = String::new();
@@ -33,10 +34,16 @@ fn main() {
  //       println!("{}", error.to_string());
         return;
     }
-    if let Err(error) = parser.write_to_db() {
+    if let Err(error) = parser.write_to_file() {
         let mut stdout = io::stdout().lock();
         stdout.write_all(error.to_string().as_bytes()).unwrap();
  //       println!("{}", error.to_string());
         return;
-    }
+    } 
+ /*   if let Err(error) = parser.write_to_db() {
+        let mut stdout = io::stdout().lock();
+        stdout.write_all(error.to_string().as_bytes()).unwrap();
+ //       println!("{}", error.to_string());
+        return;
+    }*/
 }
