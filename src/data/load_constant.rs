@@ -77,6 +77,7 @@ impl Table for LoadConstant {
     fn to_file(&self, id: usize) {
         std::fs::write("load_constant.sql", self.load_constant(id))
             .expect("Unable to write file load_constant.sql");
+        std::thread::sleep(std::time::Duration::from_secs(1));  
     }
     //
     fn to_sql(&self, id: usize) -> Vec<String> {

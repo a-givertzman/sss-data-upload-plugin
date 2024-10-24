@@ -33,11 +33,12 @@ pub trait Table {
     ///
     fn data_to_sql(&self, data: &Vec<(f64, f64)>, table_name: &str, ship_id: usize) -> Vec<String> {
         let mut result = Vec::new();
-        result.push(format!(" DELETE FROM {table_name} WHERE ship_id={ship_id};"));
-        let mut sql = format!(" INSERT INTO {table_name} (ship_id, key, value) VALUES");
+        result.push(format!(" DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n"));
+        let mut sql = format!(" INSERT INTO {table_name}\n  (ship_id, key, value)\nVALUES\n");
         data.iter().for_each(|(k, v)| {
-            sql += &format!(" ({ship_id}, {k}, {v}),");
+            sql += &format!("  ({ship_id}, {k}, {v}),\n");
         });
+        sql.pop();
         sql.pop();
         sql.push(';');
     //    dbg!(&sql);

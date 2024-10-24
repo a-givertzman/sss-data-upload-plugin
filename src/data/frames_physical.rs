@@ -91,5 +91,6 @@ impl Table for PhysicalFrame {
     //
     fn to_file(&self, id: usize) {
         std::fs::write("physical_frame.sql", self.physical_frame(id)).expect("Unable to write file physical_frame.sql");           
+        std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }
