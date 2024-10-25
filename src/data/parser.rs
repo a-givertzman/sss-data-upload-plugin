@@ -3,8 +3,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::error::Error;
+use crate::Angle;
 use crate::ApiServer;
 use crate::HydrostaticCurves;
+use crate::Pantokaren;
 use crate::StrengthForceLimit;
 use crate::Table;
 use crate::LoadConstant;
@@ -12,6 +14,7 @@ use crate::General;
 use crate::PhysicalFrame;
 use crate::TheoreticalFrame;
 use crate::BonjeanFrame;
+use crate::Windage;
 //use api_tools::client::api_query::*;
 //use api_tools::client::api_request::ApiRequest;
 
@@ -79,6 +82,9 @@ impl Parser {
                         "strength_limits_harbor" => Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body)),
         //                "compartments" => Box::new( ::new(body)),
                         "hydrostatic_curves" => Box::new(HydrostaticCurves::new(body)),  
+                        "pantokaren" => Box::new(Pantokaren::new(body)),
+                        "angle" => Box::new(Angle::new(body)), 
+                        "windage" => Box::new(Windage::new(body)), 
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
@@ -118,9 +124,12 @@ impl Parser {
             if let Some(physical_frame) = self.physical_frame {
                 physical_frame.to_file(ship_id);
             }
-            self.parsed.iter().next().map(|(_, table)| {
+            for (table_name, table) in self.parsed {
+                println!("{table_name} to_file begin");
+                std::thread::sleep(std::time::Duration::from_secs(1));
                 table.to_file(ship_id);
-            });
+                println!("{table_name} to_file end");
+            };
         }
         else { 
             return Err(Error::FromString("Parser write_to_file error: no general".to_owned()));

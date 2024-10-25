@@ -105,6 +105,7 @@ impl Table for HydrostaticCurves {
     }
     //
     fn parse(&mut self) -> Result<(), Error> {
+        println!("HydrostaticCurves parse begin");
         //    dbg!(&self.data);
         let data = self.split_data()?;
         let mut data: Vec<(usize, Vec<String>)> = data.into_iter().enumerate().collect();
@@ -145,6 +146,7 @@ impl Table for HydrostaticCurves {
             self.rad_long.push((trim, volume, row[11]));
         }
         //    dbg!(&self.mean_draught);
+        println!("HydrostaticCurves parse ok");
         Ok(())
     }
     //

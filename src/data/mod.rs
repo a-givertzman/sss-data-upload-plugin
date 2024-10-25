@@ -8,6 +8,9 @@ mod strength_force_limit;
 mod hydrostatic_curves;
 mod curve;
 mod load_constant;
+mod pantokaren;
+mod angle;
+mod windage;
 
 pub use ship_general::*;
 pub use table::*;
@@ -19,3 +22,6 @@ pub use strength_force_limit::*;
 pub use hydrostatic_curves::*;
 pub use curve::*;
 pub use load_constant::*;
+pub use pantokaren::*;
+pub use angle::*;
+pub use windage::*;

@@ -25,6 +25,7 @@ impl Table for TheoreticalFrame {
     }
     ///
     fn parse(&mut self) -> Result<(), Error> {
+        println!("TheoreticalFrame parse begin");
     //    dbg!(&self.data);
         let data = self.split_data()?;
         data.into_iter().for_each(|mut row| {
@@ -39,6 +40,7 @@ impl Table for TheoreticalFrame {
                 ));
             }
         });
+        println!("TheoreticalFrame parse ok");
         Ok(())
     }
     ///

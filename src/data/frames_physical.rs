@@ -65,6 +65,7 @@ impl Table for PhysicalFrame {
     }
     ///
     fn parse(&mut self) -> Result<(), Error> {
+        println!("PhysicalFrame parse begin");
         let mut data = self.split_data()?;
         data.remove(0);
         let mut curve_data = Vec::new();
@@ -82,6 +83,7 @@ impl Table for PhysicalFrame {
         };
         self.curve = Some(Curve::new_linear(&curve_data));
       //  dbg!(&self.parsed);
+        println!("PhysicalFrame parse ok");
         Ok(())
     }
     ///

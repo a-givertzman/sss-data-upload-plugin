@@ -28,6 +28,7 @@ impl Table for StrengthForceLimit {
     ///
     fn parse(&mut self) -> Result<(), Error> {
      //   dbg!(&self.data);
+        println!("StrengthForceLimit parse begin");
         let mut data = self.split_data()?;
         self.limit_area = Some(data.remove(0)[0].to_owned());
         data.remove(0);
@@ -48,6 +49,7 @@ impl Table for StrengthForceLimit {
             })
             .collect();
      //   dbg!(&self.parsed);
+        println!("StrengthForceLimit parse ok");
         Ok(())
     }
     ///

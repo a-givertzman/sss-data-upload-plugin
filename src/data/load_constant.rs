@@ -45,6 +45,7 @@ impl Table for LoadConstant {
     }
     //
     fn parse(&mut self) -> Result<(), Error> {
+        println!("LoadConstant parse begin");
         //    dbg!(&self.data);
         let mut data = self.split_data()?;
         data.remove(0);
@@ -71,6 +72,7 @@ impl Table for LoadConstant {
             ));
         }
         //  dbg!(&self.parsed);
+        println!("LoadConstant parse ok");
         Ok(())
     }
     //

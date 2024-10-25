@@ -57,6 +57,7 @@ impl Table for BonjeanFrame {
     }
     ///
     fn parse(&mut self) -> Result<(), Error> {
+        println!("BonjeanFrame parse begin");
      //   dbg!(&self.data);
         let mut data = self.split_data()?;
         let delta = data.remove(0).pop().ok_or(Error::FromString(format!("BonjeanFrame parse delta error")))?.parse::<f64>()?;
@@ -79,6 +80,7 @@ impl Table for BonjeanFrame {
     //    dbg!(&self.pos_x);
     //    dbg!(&self.draft);
     //    dbg!(&self.area);
+        println!("BonjeanFrame parse ok");
         Ok(())
     }
     //
