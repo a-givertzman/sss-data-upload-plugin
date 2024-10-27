@@ -1,7 +1,6 @@
 //! Структура с данными для compartment 
 use crate::error::Error;
 use crate::Table;
-TODO!!!
 /// Структура с данными для compartment
 pub struct Compartment {
     data: Option<String>,

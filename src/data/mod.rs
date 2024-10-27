@@ -11,6 +11,8 @@ mod load_constant;
 mod pantokaren;
 mod angle;
 mod windage;
+mod compartment;
+mod compartment_curve;
 
 pub use ship_general::*;
 pub use table::*;
@@ -25,3 +27,5 @@ pub use load_constant::*;
 pub use pantokaren::*;
 pub use angle::*;
 pub use windage::*;
+pub use compartment::*;
+pub use compartment_curve::*;

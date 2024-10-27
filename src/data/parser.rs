@@ -5,6 +5,7 @@ use std::rc::Rc;
 use crate::error::Error;
 use crate::Angle;
 use crate::ApiServer;
+use crate::CompartmentCurve;
 use crate::HydrostaticCurves;
 use crate::Pantokaren;
 use crate::StrengthForceLimit;
@@ -85,6 +86,15 @@ impl Parser {
                         "pantokaren" => Box::new(Pantokaren::new(body)),
                         "angle" => Box::new(Angle::new(body)), 
                         "windage" => Box::new(Windage::new(body)), 
+                        "compartment_curve" => {
+                            let name = field
+                            .get("name")
+                            .ok_or(Error::FromString(format!("No name, field:{field}")))?
+                            .as_str()
+                            .ok_or(Error::FromString(format!("Unknown name in field:{field}")))?
+                            .to_owned();
+                            Box::new(CompartmentCurve::new(name, body))
+                        }, 
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
