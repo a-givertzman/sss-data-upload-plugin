@@ -1,5 +1,4 @@
 //! Структура с данными для load_constant
-use std::borrow::Borrow;
 use std::rc::Rc;
 
 use crate::error::Error;
@@ -24,10 +23,10 @@ impl LoadConstant {
         }
     }
     //
-    fn load_constant(&self, id: usize) -> String {
-        let mut result = format!("DELETE FROM load_constant WHERE ship_id={id};\n\n");
+    fn to_string(&self, id: usize) -> String {
+        let mut result = format!("DELETE FROM to_string WHERE ship_id={id};\n\n");
         result +=
-            "INSERT INTO load_constant\n  (ship_id, mass, bound_x1, bound_x2, category_id)\nVALUES\n";
+            "INSERT INTO to_string\n  (ship_id, mass, bound_x1, bound_x2, category_id)\nVALUES\n";
         self.parsed.iter().for_each(|line| {
             result += &format!("  ({}, {}, {}, {}, 20),\n", id, line.0, line.1, line.2);
         });
@@ -77,12 +76,12 @@ impl Table for LoadConstant {
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("load_constant.sql", self.load_constant(id))
+        std::fs::write("load_constant.sql", self.to_string(id))
             .expect("Unable to write file load_constant.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
     //
     fn to_sql(&self, id: usize) -> Vec<String> {
-        vec![self.load_constant(id)]
+        vec![self.to_string(id)]
     }
 }

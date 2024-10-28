@@ -1,77 +1,93 @@
 //! Структура с данными для compartment 
+use std::rc::Rc;
 use crate::error::Error;
 use crate::Table;
+use super::PhysicalFrame;
+
 /// Структура с данными для compartment
 pub struct Compartment {
     data: Option<String>,
-    parsed: Vec<(String, String, String, String, String)>,
+    physical_frame: Rc<PhysicalFrame>,
+    parsed: Vec<(String, String, String, String, String, String, String, String)>,
 }
-///
+//
 impl Compartment {
-    ///
-    pub fn new(data: String) -> Self {
+    //
+    pub fn new(data: String, physical_frame: Rc<PhysicalFrame>) -> Self {
         Self {
             data: Some(data),
+            physical_frame,
             parsed: Vec::new(),
         }
     }
+    //
+    fn to_string(&self, ship_id: usize) -> String {
+        let mut result = format!("DELETE FROM compartment WHERE ship_id={ship_id};\n\n");
+        result +=
+            "INSERT INTO compartment\n  (ship_id, space_id, name_rus, ab_rus, name_engl, ab_engl, bound_x1, bound_x2, category_id)\nVALUES\n";
+        self.parsed.iter().for_each(|(space_id, name_rus, ab_rus, name_engl, ab_engl, bound_x1, bound_x2, category_id)| {
+            result += &format!("  ({ship_id}, {space_id}, {name_rus}, {ab_rus}, {name_engl}, {ab_engl}, {bound_x1}, {bound_x2}, {category_id}),\n");
+        });
+        result.pop();
+        result.pop();
+        result.push(';');
+        result
+    }
 }
-///
+//
 impl Table for Compartment {
-    ///
+    //
     fn data(&mut self) -> Option<String> {
         self.data.take()
     }
-    ///
+    //
     fn parse(&mut self) -> Result<(), Error> {
-     //   dbg!(&self.data);
+        println!("Compartment parse begin");
+        //    dbg!(&self.data);
         let mut data = self.split_data()?;
-        self.limit_area = Some(data.remove(0)[0].to_owned());
         data.remove(0);
-        self.parsed = data
-            .into_iter()
-            .filter_map(|line| {
-                if line.len() == 5 {
-                    Some((
-                        line[0].to_owned(), // frame_real index
-                        line[1].to_owned(), // Bending moment min [kN?m]
-                        line[2].to_owned(), // Bending moment max [kN?m]
-                        line[3].to_owned(), // Shear force min [kN]
-                        line[4].to_owned(), // Shear force max [kN]
-                    ))
-                } else {
-                    None
-                }
-            })
-            .collect();
-     //   dbg!(&self.parsed);
+        for row in data {
+        //   dbg!(&row);
+            let category_id = row.get(0).ok_or(Error::FromString(
+                "Compartment error: no category_id in row".to_owned(),
+            ))?.to_string();
+            let space_id = row.get(1).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?.to_string();
+            let name_rus = row.get(2).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?.to_string();
+            let ab_rus = row.get(3).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?.to_string();
+            let name_engl = row.get(4).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?.to_string(); 
+            let ab_engl = row.get(5).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?.to_string(); 
+            let fr_min = row.get(6).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?;
+            let fr_max = row.get(7).ok_or(Error::FromString(
+                "Compartment error: no space_id in row".to_owned(),
+            ))?;
+            let bound_x1 = self.physical_frame.value(fr_min)?.to_string();
+            let bound_x2 = self.physical_frame.value(fr_max)?.to_string();
+            self.parsed.push((space_id, name_rus, ab_rus, name_engl, ab_engl, bound_x1, bound_x2, category_id));
+        }
+        //  dbg!(&self.parsed);
+        println!("Compartment parse ok");
         Ok(())
     }
-    ///
-    fn to_sql(&mut self, id: usize) -> Vec<String> {
-    //    dbg!(&self.parsed);
-        let mut result = Vec::new();
-        result.push(format!("DELETE FROM strength_force_limit WHERE ship_id={id};"));
-        let limit_area = self.limit_area.take().expect("Compartment to_sql limit_area error");
-        let mut sql = "INSERT INTO strength_force_limit ( \
-            ship_id, \
-            frame_real_index, \
-            value, \
-            limit_type, \
-            limit_area, \
-            force_type  \
-        ) VALUES".to_owned();
-        self.parsed.iter_mut().for_each(|line| {
-            let frame_real_index = &line.0;
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', {limit_area}, 'bending_moment'),", line.1);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', {limit_area}, 'bending_moment'),", line.2);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'low', {limit_area}, 'shear_force'),", line.3);
-            sql += &format!(" ({id}, {frame_real_index}, {}, 'high', {limit_area}, 'shear_force'),", line.4);
-        });
-        sql.pop();
-        sql.push(';');
-    //    dbg!(&sql);
-        result.push(sql);
-        result
+    //
+    fn to_file(&self, ship_id: usize) {
+        std::fs::write("compartment.sql", self.to_string(ship_id))
+            .expect("Unable to write file compartment.sql");
+        std::thread::sleep(std::time::Duration::from_secs(1));  
+    }
+    //
+    fn to_sql(&self, ship_id: usize) -> Vec<String> {
+        vec![self.to_string(ship_id)]
     }
 }

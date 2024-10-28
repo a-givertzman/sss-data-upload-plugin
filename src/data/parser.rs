@@ -5,6 +5,7 @@ use std::rc::Rc;
 use crate::error::Error;
 use crate::Angle;
 use crate::ApiServer;
+use crate::Compartment;
 use crate::CompartmentCurve;
 use crate::HydrostaticCurves;
 use crate::Pantokaren;
@@ -78,7 +79,7 @@ impl Parser {
                     let mut table: Box::<dyn Table> = match text {
                         "frames_theoretical" => Box::new(TheoreticalFrame::new(body)),
                         "bonjean" => Box::new(BonjeanFrame::new(body)),
-                        "load_constant" => Box::new(LoadConstant::new(body, Rc::clone(&self.physical_frame.clone().ok_or(Error::FromString(format!("Parser error: physical_frame")))?))),
+                        "load_constant" => Box::new(LoadConstant::new(body, Rc::clone(&self.physical_frame.clone().ok_or(Error::FromString(format!("Parser LoadConstant error: physical_frame")))?))),
                         "strength_limits_sea" => Box::new(StrengthForceLimit::new("sea\r\n".to_owned() + &body)),
                         "strength_limits_harbor" => Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body)),
         //                "compartments" => Box::new( ::new(body)),
@@ -86,6 +87,7 @@ impl Parser {
                         "pantokaren" => Box::new(Pantokaren::new(body)),
                         "angle" => Box::new(Angle::new(body)), 
                         "windage" => Box::new(Windage::new(body)), 
+                        "compartment" => Box::new(Compartment::new(body, Rc::clone(&self.physical_frame.clone().ok_or(Error::FromString(format!("Parser Compartment error: physical_frame")))?))),
                         "compartment_curve" => {
                             let name = field
                             .get("name")

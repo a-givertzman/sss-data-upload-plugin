@@ -20,13 +20,13 @@ impl CompartmentCurve {
     }
     //
     fn to_string(&self, ship_id: usize) -> String {
-        let mut result = format!("DELETE FROM compartment_curve WHERE id IN (SELECT id FROM compartment WHERE name='{}');\n\n", self.space_name);
+        let mut result = format!("DELETE FROM compartment_curve WHERE space_id IN (SELECT space_id FROM compartment WHERE name='{}' AND ship_id={});\n\n", self.space_name, ship_id);
         result += &format!("INSERT INTO compartment_curve\n
-          (ship_id, level, volume, buoyancy_x, buoyancy_y, buoyancy_z, trans_inertia_moment_self, long_inertia_moment_self)\nSELECT\n");
-        self.parsed.iter().for_each(|(level, volume, buoyancy_x, buoyancy_y, buoyancy_z, trans_inertia_moment_self, long_inertia_moment_self)| {
-            result += &format!("  ({ship_id}, id as space_id, {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z}, {trans_inertia_moment_self}, {long_inertia_moment_self}),\n");
+          (ship_id, space_id, level, volume, buoyancy_x, buoyancy_y, buoyancy_z, trans_inertia_moment_self, long_inertia_moment_self)\nSELECT\n");
+        self.parsed.iter().for_each(|(level, volume, buoyancy_x, buoyancy_y, buoyancy_z, long_inertia_moment_self, trans_inertia_moment_self)| {
+            result += &format!("  {ship_id}, c.space_id, {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z}, {trans_inertia_moment_self}, {long_inertia_moment_self},\n");
         });
-        result += &format!("FROM compartment WHERE name='{}';", self.space_name);
+        result += &format!("FROM compartment as c\nWHERE\n  c.space_id IN (SELECT space_id FROM compartment WHERE name='{}' AND ship_id={};\n", self.space_name, ship_id);
         result
     }
 }
@@ -41,59 +41,24 @@ impl Table for CompartmentCurve {
         println!("CompartmentCurve parse begin");
         let mut data = self.split_data()?;
         data.remove(0);
-        for row in data.into_iter() {
-            let level = row
-                .get(0)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no level in row".to_owned(),
-                ))?
-                .to_owned();
-            let volume = row
-                .get(1)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no volume in row".to_owned(),
-                ))?
-                .to_owned();
-            let buoyancy_x = row
-                .get(2)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no buoyancy_x in row".to_owned(),
-                ))?
-                .to_owned();
-            let buoyancy_y = row
-                .get(3)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no buoyancy_y in row".to_owned(),
-                ))?
-                .to_owned();
-            let buoyancy_z = row
-                .get(4)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no buoyancy_z in row".to_owned(),
-                ))?
-                .to_owned();
-            let trans_inertia_moment_self = row
-                .get(5)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no trans_inertia_moment_self in row".to_owned(),
-                ))?
-                .to_owned();
-            let long_inertia_moment_self = row
-                .get(6)
-                .ok_or(Error::FromString(
-                    "CompartmentCurve error: no long_inertia_moment_self in row".to_owned(),
-                ))?
-                .to_owned();
-            self.parsed.push((
-                level,
-                volume,
-                buoyancy_x,
-                buoyancy_y,
-                buoyancy_z,
-                trans_inertia_moment_self,
-                long_inertia_moment_self,
-            ));
-        }
+        self.parsed = data
+            .into_iter()
+            .filter_map(|line| {
+                if line.len() == 5 {
+                    Some((
+                        line[0].to_owned(), // level
+                        line[1].to_owned(), // volume
+                        line[2].to_owned(), // buoyancy_x
+                        line[3].to_owned(), // buoyancy_y
+                        line[4].to_owned(), // buoyancy_z
+                        line[5].to_owned(), // long_inertia_moment_self
+                        line[6].to_owned(), // trans_inertia_moment_self
+                    ))
+                } else {
+                    None
+                }
+            })
+            .collect();
         //  dbg!(&self.parsed);
         println!("CompartmentCurve parse ok");
         Ok(())
