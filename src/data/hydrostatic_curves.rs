@@ -6,7 +6,7 @@ use std::thread::sleep;
 
 /// Структура с данными для bonjean_frame
 pub struct HydrostaticCurves {
-    data: Option<String>,
+    data: String,
     /// Средняя осадка, зависимость от объемного водоизмещения,
     /// Trim, m | V, м3 | T, м  ship_id, key, value
     mean_draught: Vec<(f64, f64, f64)>,
@@ -35,7 +35,7 @@ impl HydrostaticCurves {
     ///
     pub fn new(data: String) -> Self {
         Self {
-            data: Some(data),
+            data,
             mean_draught: Vec::new(),
             center_draught: Vec::new(),
             waterline_area: Vec::new(),
@@ -65,9 +65,9 @@ impl HydrostaticCurves {
         &self,
         ship_id: usize,
     ) -> String {
-        let mut result = format!(" DELETE FROM waterline_breadth WHERE ship_id={ship_id};\n\n");
+        let mut result = format!("DELETE FROM waterline_breadth WHERE ship_id={ship_id};\n\n");
         result +=
-            &format!(" INSERT INTO waterline_breadth\n  (ship_id, trim, draught, value)\nVALUES\n");
+            &format!("INSERT INTO waterline_breadth\n  (ship_id, trim, draught, value)\nVALUES\n");
             self.waterline_breadth.iter().for_each(|(trim, draught, value)| {
             result += &format!("  ({ship_id}, {trim}, {draught}, {value}),\n");
         });
@@ -84,9 +84,9 @@ impl HydrostaticCurves {
         table_name: &str,
         ship_id: usize,
     ) -> String {
-        let mut result = format!(" DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n");
+        let mut result = format!("DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n");
         result +=
-            &format!(" INSERT INTO {table_name}\n  (ship_id, trim, volume, value)\nVALUES\n");
+            &format!("INSERT INTO {table_name}\n  (ship_id, trim, volume, value)\nVALUES\n");
         data.iter().for_each(|(trim, volume, value)| {
             result += &format!("  ({ship_id}, {trim}, {volume}, {value}),\n");
         });
@@ -100,14 +100,10 @@ impl HydrostaticCurves {
 ///
 impl Table for HydrostaticCurves {
     //
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("HydrostaticCurves parse begin");
         //    dbg!(&self.data);
-        let data = self.split_data()?;
+        let data = crate::split_data(&self.data)?;
         let mut data: Vec<(usize, Vec<String>)> = data.into_iter().enumerate().collect();
         data.remove(0);
         let mut parsed: Vec<(usize, Vec<f64>)> = Vec::new();

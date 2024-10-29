@@ -8,7 +8,7 @@ use super::PhysicalFrame;
 
 /// Структура с данными для load_constant
 pub struct LoadConstant {
-    data: Option<String>,
+    data: String,
     physical_frame: Rc<PhysicalFrame>,
     parsed: Vec<(String, String, String)>,
 }
@@ -17,7 +17,7 @@ impl LoadConstant {
     //
     pub fn new(data: String, physical_frame: Rc<PhysicalFrame>) -> Self {
         Self {
-            data: Some(data),
+            data,
             physical_frame,
             parsed: Vec::new(),
         }
@@ -39,14 +39,10 @@ impl LoadConstant {
 //
 impl Table for LoadConstant {
     //
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("LoadConstant parse begin");
         //    dbg!(&self.data);
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
         data.remove(0);
         for row in data {
         //   dbg!(&row);

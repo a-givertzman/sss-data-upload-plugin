@@ -4,32 +4,28 @@ use crate::Table;
 
 /// Структура с данными для strength_force_limit
 pub struct StrengthForceLimit {
-    data: Option<String>,
+    data: String,
     limit_area: Option<String>,
     parsed: Vec<(String, String, String, String, String)>,
 }
 ///
 impl StrengthForceLimit {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: String,) -> Self {
         Self {
-            data: Some(data),
+            data,
             limit_area: None,
             parsed: Vec::new(),
         }
     }
 }
-///
+//
 impl Table for StrengthForceLimit {
-    ///
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    ///
+    //
     fn parse(&mut self) -> Result<(), Error> {
      //   dbg!(&self.data);
         println!("StrengthForceLimit parse begin");
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
         self.limit_area = Some(data.remove(0)[0].to_owned());
         data.remove(0);
         self.parsed = data

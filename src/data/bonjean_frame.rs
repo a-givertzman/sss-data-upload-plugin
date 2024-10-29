@@ -5,7 +5,7 @@ use std::fs;
 
 /// Структура с данными для bonjean_frame
 pub struct BonjeanFrame {
-    data: Option<String>,
+    data: String,
     draft: Vec<f64>,
     pos_x: Vec<f64>,
     area: Vec<Vec<f64>>,
@@ -15,7 +15,7 @@ impl BonjeanFrame {
     //
     pub fn new(data: String) -> Self {
         Self {
-            data: Some(data),
+            data,
             draft: Vec::new(),
             pos_x: Vec::new(),
             area: Vec::new(),
@@ -51,15 +51,11 @@ impl BonjeanFrame {
 }
 //
 impl Table for BonjeanFrame {
-    ///
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    ///
+    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("BonjeanFrame parse begin");
      //   dbg!(&self.data);
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
         let delta = data.remove(0).pop().ok_or(Error::FromString(format!("BonjeanFrame parse delta error")))?.parse::<f64>()?;
         let mut draft = data.remove(0);
         draft.remove(0);

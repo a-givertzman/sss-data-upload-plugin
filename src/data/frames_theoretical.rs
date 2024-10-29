@@ -4,7 +4,7 @@ use crate::Table;
 
 /// Структура с данными для theoretical_frame
 pub struct TheoreticalFrame {
-    data: Option<String>,
+    data: String,
     parsed: Vec<(String, String)>,
 }
 ///
@@ -12,22 +12,18 @@ impl TheoreticalFrame {
     ///
     pub fn new(data: String) -> Self {
         Self {
-            data: Some(data),
+            data,
             parsed: Vec::new(),
         }
     }
 }
-///
+//
 impl Table for TheoreticalFrame {
-    ///
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
     ///
     fn parse(&mut self) -> Result<(), Error> {
         println!("TheoreticalFrame parse begin");
     //    dbg!(&self.data);
-        let data = self.split_data()?;
+        let data = crate::split_data(&self.data)?;
         data.into_iter().for_each(|mut row| {
             if let Ok(second) = row
                 .pop()

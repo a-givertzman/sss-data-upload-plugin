@@ -8,7 +8,7 @@ use super::{Curve, ICurve};
 
 /// Структура с данными для physical_frame
 pub struct PhysicalFrame {
-    data: Option<String>,
+    data: String,
     index_map: HashMap<String, f64>,
     curve: Option<Curve>,
     parsed: Vec<(String, String)>,
@@ -18,7 +18,7 @@ impl PhysicalFrame {
     //
     pub fn new(data: String) -> Self {
         Self {
-            data: Some(data),
+            data,
             index_map: HashMap::new(),
             curve: None,
             parsed: Vec::new(),
@@ -59,14 +59,10 @@ impl PhysicalFrame {
 }
 //
 impl Table for PhysicalFrame {
-    ///
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    ///
+    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("PhysicalFrame parse begin");
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
         data.remove(0);
         let mut curve_data = Vec::new();
         for (index, row) in data.into_iter().enumerate() {

@@ -6,7 +6,7 @@ use super::PhysicalFrame;
 
 /// Структура с данными для compartment
 pub struct Compartment {
-    data: Option<String>,
+    data: String,
     physical_frame: Rc<PhysicalFrame>,
     parsed: Vec<(String, String, String, String, String, String, String, String)>,
 }
@@ -15,7 +15,7 @@ impl Compartment {
     //
     pub fn new(data: String, physical_frame: Rc<PhysicalFrame>) -> Self {
         Self {
-            data: Some(data),
+            data,
             physical_frame,
             parsed: Vec::new(),
         }
@@ -26,7 +26,7 @@ impl Compartment {
         result +=
             "INSERT INTO compartment\n  (ship_id, space_id, name_rus, ab_rus, name_engl, ab_engl, bound_x1, bound_x2, category_id)\nVALUES\n";
         self.parsed.iter().for_each(|(space_id, name_rus, ab_rus, name_engl, ab_engl, bound_x1, bound_x2, category_id)| {
-            result += &format!("  ({ship_id}, {space_id}, {name_rus}, {ab_rus}, {name_engl}, {ab_engl}, {bound_x1}, {bound_x2}, {category_id}),\n");
+            result += &format!("  ({ship_id}, {space_id}, '{name_rus}', '{ab_rus}', '{name_engl}', '{ab_engl}', {bound_x1}, {bound_x2}, {category_id}),\n");
         });
         result.pop();
         result.pop();
@@ -37,14 +37,10 @@ impl Compartment {
 //
 impl Table for Compartment {
     //
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("Compartment parse begin");
         //    dbg!(&self.data);
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
         data.remove(0);
         for row in data {
         //   dbg!(&row);
@@ -82,7 +78,7 @@ impl Table for Compartment {
     }
     //
     fn to_file(&self, ship_id: usize) {
-        std::fs::write("compartment.sql", self.to_string(ship_id))
+        std::fs::write("load_base.sql", self.to_string(ship_id))
             .expect("Unable to write file compartment.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }

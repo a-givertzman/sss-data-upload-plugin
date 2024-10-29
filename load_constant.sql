@@ -1,6 +1,6 @@
-DELETE FROM load_constant WHERE ship_id=2;
+DELETE FROM to_string WHERE ship_id=2;
 
-INSERT INTO load_constant
+INSERT INTO to_string
   (ship_id, mass, bound_x1, bound_x2, category_id)
 VALUES
   (2, 0.486673696, -3.1999999999799997, -3, 20),

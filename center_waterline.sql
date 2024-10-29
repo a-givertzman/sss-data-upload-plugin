@@ -1,6 +1,6 @@
- DELETE FROM center_waterline WHERE ship_id=2;
+DELETE FROM center_waterline WHERE ship_id=2;
 
- INSERT INTO center_waterline
+INSERT INTO center_waterline
   (ship_id, trim, volume, value)
 VALUES
   (2, 0, 3965.38, 1.75),

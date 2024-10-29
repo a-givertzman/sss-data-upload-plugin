@@ -4,7 +4,7 @@ use crate::Table;
 
 /// Структура с данными для bonjean_frame
 pub struct Pantokaren {
-    data: Option<String>,
+    data: String,
     /// Trim, m | T, м  | entry angle, deg | flooding angle, deg
     parsed: Vec<(f64, f64, f64, f64)>,
 }
@@ -13,7 +13,7 @@ impl Pantokaren {
     //
     pub fn new(data: String) -> Self {
         Self {
-            data: Some(data),
+            data,
             parsed: Vec::new(),
         }
     }
@@ -36,14 +36,10 @@ impl Pantokaren {
 //
 impl Table for Pantokaren {
     //
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    //
     fn parse(&mut self) -> Result<(), Error> {
         println!("Pantokaren parse begin");
     //    dbg!(&self.data);
-        let mut data = self.split_data()?;
+        let mut data = crate::split_data(&self.data)?;
     //    dbg!(&data);
         let roll = data.remove(0);
     //    dbg!(&roll);

@@ -8,16 +8,16 @@ use crate::{ApiServer, Table};
 
 /// Структура с данными для ship_name и ship_parameters
 pub struct General {
-    data: Option<String>,
+    data: String,
     parsed: HashMap<String, (String, Option<String>)>,
     api_server: Rc<RefCell<ApiServer>>,
 }
-///
+//
 impl General {
-    ///
-    pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
+    //
+    pub fn new (data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
         Self {
-            data: Some(data),
+            data,
             parsed: HashMap::new(),
             api_server,
         }
@@ -75,22 +75,29 @@ impl General {
             )))?;
         Ok(id as usize)*/
     }
+    //
+    fn split_data(&mut self) -> Result<Vec<Vec<String>>, Error> {
+        Ok(self
+            .data
+            .replace(" ", "")
+            .replace(",", ".")
+            .split("\r\n")
+            .map(|line| {
+                line.split(';')
+                    .filter(|s| s.len() > 0)
+                    .map(|s| s.to_owned())
+                    .collect::<Vec<String>>()
+            })
+            .filter(|s| s.len() > 0)
+            .collect())
+    }
 }
 
 impl Table for General {
-    ///
-    fn data(&mut self) -> Option<String> {
-        self.data.take()
-    }
-    ///
+    //
     fn parse(&mut self) -> Result<(), Error> {
-        let binding = self
-            .data
-            .take()
-            .ok_or(Error::FromString(
-                "General parse error: no data!".to_owned(),
-            ))?;
-        let data: Vec<Vec<&str>> = binding
+        let data: Vec<Vec<&str>> = 
+            self.data
             .split("\r\n")
             .filter(|s| s.len() > 0)
             .map(|s| s.split(';').collect())
@@ -106,7 +113,7 @@ impl Table for General {
         }
         Ok(())
     }
-    ///
+    //
     fn to_sql(&self, id: usize) -> Vec<String> {
         let mut result = Vec::new();
         result.push(format!("DELETE FROM ship_parameters WHERE ship_id={id};"));
@@ -132,6 +139,25 @@ impl Table for General {
         sql2.push(';');
         result.push(sql1);
         result.push(sql2);
+        result
+    }
+    
+    fn to_file(&self, id: usize) {
+        //TODO
+    }
+    
+    fn data_to_sql(&self, data: &Vec<(f64, f64)>, table_name: &str, ship_id: usize) -> Vec<String> {
+        let mut result = Vec::new();
+        result.push(std::format!(" DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n"));
+        let mut sql = std::format!(" INSERT INTO {table_name}\n  (ship_id, key, value)\nVALUES\n");
+        data.iter().for_each(|(k, v)| {
+            sql += &std::format!("  ({ship_id}, {k}, {v}),\n");
+        });
+        sql.pop();
+        sql.pop();
+        sql.push(';');
+    //    dbg!(&sql);
+        result.push(sql);
         result
     }
 }
