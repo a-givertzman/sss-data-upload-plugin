@@ -24,9 +24,9 @@ impl LoadConstant {
     }
     //
     fn to_string(&self, id: usize) -> String {
-        let mut result = format!("DELETE FROM to_string WHERE ship_id={id};\n\n");
+        let mut result = format!("DELETE FROM load_constant WHERE ship_id={id};\n\n");
         result +=
-            "INSERT INTO to_string\n  (ship_id, mass, bound_x1, bound_x2, category_id)\nVALUES\n";
+            "INSERT INTO load_constant\n  (ship_id, mass, bound_x1, bound_x2, category_id)\nVALUES\n";
         self.parsed.iter().for_each(|line| {
             result += &format!("  ({}, {}, {}, {}, 20),\n", id, line.0, line.1, line.2);
         });
@@ -72,8 +72,8 @@ impl Table for LoadConstant {
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("load_constant.sql", self.to_string(id))
-            .expect("Unable to write file load_constant.sql");
+        std::fs::write("hull.sql", self.to_string(id))
+            .expect("Unable to write file hull.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
     //
