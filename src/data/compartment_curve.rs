@@ -1,6 +1,4 @@
 //! Структура с данными для compartment_curve
-use std::collections::HashMap;
-
 use crate::error::Error;
 use crate::Table;
 
@@ -42,7 +40,7 @@ impl Table for CompartmentCurve {
             let data = data
                 .into_iter()
                 .filter_map(|line| {
-                    if line.len() == 7 {
+                    if line.len() >= 7 {
                         Some((
                             line[0].to_owned(), // level
                             line[1].to_owned(), // volume

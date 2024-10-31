@@ -45,7 +45,7 @@ impl PhysicalFrame {
         Err(Error::FromString(format!("PhysicalFrame value error: no value {index}")))
     }
     //
-    fn physical_frame(&self, id: usize) -> String {
+    fn to_string(&self, id: usize) -> String {
         let mut result = format!("DELETE FROM physical_frame WHERE ship_id={id};\n\n");
         result += "INSERT INTO physical_frame\n  (ship_id, frame_index, pos_x)\nVALUES\n";
         self.parsed.iter().for_each(|line| {
@@ -82,13 +82,13 @@ impl Table for PhysicalFrame {
         println!("PhysicalFrame parse ok");
         Ok(())
     }
-    ///
+    //
     fn to_sql(&self, id: usize) -> Vec<String> {
-        vec![self.physical_frame(id)]
+        vec![self.to_string(id)]
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("physical_frame.sql", self.physical_frame(id)).expect("Unable to write file physical_frame.sql");           
+        std::fs::write("physical_frame.sql", self.to_string(id)).expect("Unable to write file physical_frame.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

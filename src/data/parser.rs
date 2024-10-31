@@ -3,11 +3,17 @@ use crate::error::Error;
 use crate::Angle;
 use crate::ApiServer;
 use crate::BonjeanFrame;
+use crate::Bulkhead;
+use crate::BulkheadPlace;
 use crate::Compartment;
 use crate::CompartmentCurve;
 use crate::General;
+use crate::HoldCurve;
+use crate::HoldGroup;
+use crate::HoldPart;
 use crate::HydrostaticCurves;
 use crate::LoadConstant;
+use crate::MinMetacentricHeightSubdivision;
 use crate::Pantokaren;
 use crate::PhysicalFrame;
 use crate::StrengthForceLimit;
@@ -62,6 +68,16 @@ impl Parser {
             )
         })
         .collect();
+        let hold_curve_data: Vec<_> = fields
+        .iter()
+        .filter(|f| f.get("tag").unwrap().as_str().unwrap() == "hold_curve")
+        .map(|f| {
+            (
+                f.get("code").unwrap().as_str().unwrap().to_string(),
+                f.get("body").unwrap().as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
         let fields: HashMap<String, String> = fields
             .iter()
             .map(|f| {
@@ -107,6 +123,22 @@ impl Parser {
         compartment_curve.parse()?;
         self.parsed.insert("compartment_curve".to_owned(), compartment_curve);
 
+        let mut hold_group = Box::new(HoldGroup::new(fields.get("hold_group").ok_or(
+            Error::FromString(format!("Parser convert error: no hold_group!")),
+        )?.to_string()));
+        hold_group.parse()?;
+        self.parsed.insert("hold_group".to_owned(), hold_group);
+
+        let mut hold_part = Box::new(HoldPart::new(fields.get("hold_part").ok_or(
+            Error::FromString(format!("Parser convert error: no hold_part!")),
+        )?.to_string()));
+        hold_part.parse()?;
+        self.parsed.insert("hold_part".to_owned(), hold_part);
+
+        let mut hold_curve = Box::new(HoldCurve::new(hold_curve_data));
+        hold_curve.parse()?;
+        self.parsed.insert("hold_curve".to_owned(), hold_curve);
+
         for (tag, body) in fields {
             match tag.as_str()  {
                 text => {
@@ -129,10 +161,16 @@ impl Parser {
                         "pantokaren" => Box::new(Pantokaren::new(body)),
                         "angle" => Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
+                        "min_metacentric_height_subdivision" => Box::new(MinMetacentricHeightSubdivision::new(body)),
+                        "bulkhead" => Box::new(Bulkhead::new(body)),
+                        "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
                         "general" => continue,
                         "physical_frame" => continue,
                         "compartment" => continue,
                         "compartment_curve" => continue,
+                        "hold_group" => continue,
+                        "hold_part" => continue,
+                        "hold_curve" => continue,
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
