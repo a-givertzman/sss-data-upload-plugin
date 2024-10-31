@@ -3,13 +3,13 @@ use crate::error::Error;
 use crate::Table;
 
 /// Структура с данными для bonjean_frame
-pub struct Pantokaren {
+pub struct Pantocaren {
     data: String,
     /// Trim, m | T, м  | entry angle, deg | flooding angle, deg
     parsed: Vec<(f64, f64, f64, f64)>,
 }
 //
-impl Pantokaren {
+impl Pantocaren {
     //
     pub fn new(data: String) -> Self {
         Self {
@@ -34,10 +34,10 @@ impl Pantokaren {
     }   
 }
 //
-impl Table for Pantokaren {
+impl Table for Pantocaren {
     //
     fn parse(&mut self) -> Result<(), Error> {
-        println!("Pantokaren parse begin");
+        println!("Pantocaren parse begin");
     //    dbg!(&self.data);
         let mut data = crate::split_data(&self.data)?;
     //    dbg!(&data);
@@ -46,23 +46,23 @@ impl Table for Pantokaren {
         data.remove(0);
         for row in data.into_iter() {
             let trim = row.get(0).ok_or(Error::FromString(
-                "Pantokaren parse error: no trim".to_owned(),
+                "Pantocaren parse error: no trim".to_owned(),
             ))?.to_owned().parse::<f64>()?;
             let draft = row.get(1).ok_or(Error::FromString(
-                "Pantokaren parse error: no draft".to_owned(),
+                "Pantocaren parse error: no draft".to_owned(),
             ))?.to_owned().parse::<f64>()?;
             for index in 2..roll.len() {
                 let roll = roll.get(index).ok_or(Error::FromString(
-                    format!("Pantokaren parse error: no roll for index {index}, roll: {:?}", roll),
+                    format!("Pantocaren parse error: no roll for index {index}, roll: {:?}", roll),
                 ))?.to_owned().parse::<f64>()?;
                 let moment = row.get(index).ok_or(Error::FromString(
-                    "Pantokaren parse error: no draft".to_owned(),
+                    "Pantocaren parse error: no draft".to_owned(),
                 ))?.to_owned().parse::<f64>()?;
                 self.parsed.push((trim, draft, roll, moment));
             }
         };
       //  dbg!(&self.parsed);
-        println!("Pantokaren parse ok");
+        println!("Pantocaren parse ok");
         Ok(())
     }
     //
@@ -71,7 +71,7 @@ impl Table for Pantokaren {
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("pantokaren.sql", self.to_string(id)).expect("Unable to write file pantokaren.sql");           
+        std::fs::write("pantocaren.sql", self.to_string(id)).expect("Unable to write file pantocaren.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

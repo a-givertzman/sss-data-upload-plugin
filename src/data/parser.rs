@@ -14,7 +14,7 @@ use crate::HoldPart;
 use crate::HydrostaticCurves;
 use crate::LoadConstant;
 use crate::MinMetacentricHeightSubdivision;
-use crate::Pantokaren;
+use crate::Pantocaren;
 use crate::PhysicalFrame;
 use crate::StrengthForceLimit;
 use crate::Table;
@@ -158,7 +158,7 @@ impl Parser {
                             Box::new(StrengthForceLimit::new("harbor\r\n".to_owned() + &body))
                         }
                         "hydrostatic_curves" => Box::new(HydrostaticCurves::new(body)),
-                        "pantokaren" => Box::new(Pantokaren::new(body)),
+                        "pantocaren" => Box::new(Pantocaren::new(body)),
                         "angle" => Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
                         "min_metacentric_height_subdivision" => Box::new(MinMetacentricHeightSubdivision::new(body)),
