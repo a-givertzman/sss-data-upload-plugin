@@ -21,7 +21,7 @@ impl CompartmentCurve {
         let mut result: String = format!("DELETE FROM compartment_curve WHERE space_id IN (SELECT space_id FROM compartment WHERE name_rus='{space_name}' AND ship_id={ship_id});\n\n");
         result += &format!("INSERT INTO compartment_curve\n  (ship_id, space_id, level, volume, buoyancy_x, buoyancy_y, buoyancy_z, trans_inertia_moment_self, long_inertia_moment_self)\n");
         parsed_data.iter().for_each(|(level, volume, buoyancy_x, buoyancy_y, buoyancy_z, long_inertia_moment_self, trans_inertia_moment_self)| {
-            result += &format!("SELECT  {ship_id}, (SELECT space_id FROM compartment WHERE name_rus='{space_name}' AND ship_id={ship_id}), {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z}, {trans_inertia_moment_self}, {long_inertia_moment_self} UNION ALL\n");
+            result += &format!("SELECT {ship_id}, (SELECT space_id FROM compartment WHERE name_rus='{space_name}' AND ship_id={ship_id}), {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z}, {trans_inertia_moment_self}, {long_inertia_moment_self} UNION ALL\n");
         });
         result = result.drain(..result.len()-11).collect();
         result += ";\n\n\n";   
