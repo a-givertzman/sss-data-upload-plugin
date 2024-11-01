@@ -6,7 +6,7 @@ use crate::Table;
 pub struct HorizontalSurf {
     data: String,
     /// AREA [m2]	VCG [m]	LCG [m]	TCG [m]	X1 [m]	X2 [m]
-    parsed: Vec<Vec<f64>>,
+    parsed: Vec<Vec<String>>,
 }
 //
 impl  HorizontalSurf {
@@ -18,13 +18,13 @@ impl  HorizontalSurf {
         }
     }
     //
-    pub fn to_string(&self, table_name: &str, ship_id: usize, value_index: usize) -> String {
-        let mut result = format!("DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n");
-        result += &format!("INSERT INTO {table_name}\n  (ship_id, key, value)\nVALUES\n");
+    pub fn horizontal_area_stability(&self, ship_id: usize) -> String {
+        let mut result = format!("DELETE FROM horizontal_area_stability WHERE ship_id={ship_id};\n\n");
+        result += "INSERT INTO horizontal_area_stability\n  (ship_id, name, value, shift_x, shift_y, shift_z)\nVALUES\n";
         self.parsed
             .iter()
             .for_each(|row| {
-                result += &format!("  ({ship_id}, {}, {}),\n", row[0], row[value_index]);
+                result += &format!("  ({ship_id}, '{}', {}, {}, {}, {}),\n", row[0], row[1], row[3], row[2], row[4]);
             });
         result.pop();
         result.pop();
@@ -32,25 +32,13 @@ impl  HorizontalSurf {
         result
     }
     //
-    pub fn waterline_length(&self, ship_id: usize) -> String {
-        self.to_string("waterline_length", ship_id, 2)
-    }
-    //
-    pub fn volume_shift(&self, ship_id: usize) -> String {
-        self.to_string("volume_shift", ship_id, 1)
-    }
-    //
-    pub fn bow_area(&self, ship_id: usize) -> String {
-        self.to_string("bow_area", ship_id, 9)
-    }
-    //
-    pub fn vertical_area_stability(&self, ship_id: usize) -> String {
-        let mut result = format!("DELETE FROM vertical_area_stability WHERE ship_id={ship_id};\n\n");
-        result += "INSERT INTO vertical_area_stability\n  (ship_id, draught, area, moment_x, moment_z)\nVALUES\n";
+    pub fn horizontal_area_strength(&self, ship_id: usize) -> String {
+        let mut result = format!("DELETE FROM horizontal_area_strength WHERE ship_id={ship_id};\n\n");
+        result += "INSERT INTO horizontal_area_strength\n  (ship_id, name, value, bound_x1, bound_x2)\nVALUES\n";
         self.parsed
             .iter()
             .for_each(|row| {
-                result += &format!("  ({ship_id}, {}, {}, {}, {}),\n", row[0], row[4], row[6], row[8]);
+                result += &format!("  ({ship_id}, '{}', {}, {}, {}),\n", row[0], row[1], row[5], row[6]);
             });
         result.pop();
         result.pop();
@@ -66,14 +54,10 @@ impl Table for HorizontalSurf  {
         let mut data = crate::split_data(&self.data)?;
         data.remove(0);
         for row in data.into_iter() {  
-            if row.len() != 10 {
-                return Err(Error::FromString(format!("HorizontalSurf parse error: row.len() != 10, row={:?}", row)));
+            if row.len() != 7 {
+                return Err(Error::FromString(format!("HorizontalSurf parse error: row.len() != 6, row={:?}", row)));
             }
-            let mut values = Vec::new();          
-            for value in row {
-                values.push(value.parse::<f64>()?);
-            }
-            self.parsed.push(values);
+            self.parsed.push(row);
         }
         println!("HorizontalSurf parse ok");
         //  dbg!(&self.parsed);
@@ -81,21 +65,15 @@ impl Table for HorizontalSurf  {
     }
     //
     fn to_sql(&self, id: usize) -> Vec<String> {
-        vec![self.waterline_length(id), self.volume_shift(id), self.bow_area(id), self.vertical_area_stability(id)]
+        vec![self.horizontal_area_stability(id), self.horizontal_area_strength(id)]
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("waterline_length.sql", self.waterline_length(id))
-            .expect("Unable to write file waterline_length.sql");
+        std::fs::write("horizontal_area_stability.sql", self.horizontal_area_stability(id))
+            .expect("Unable to write file horizontal_area_stability.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("volume_shift.sql", self.volume_shift(id))
-            .expect("Unable to write file volume_shift.sql");
-        std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("bow_area.sql", self.bow_area(id))
-            .expect("Unable to write file bow_area.sql");
-        std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("vertical_area_stability.sql", self.vertical_area_stability(id))
-            .expect("Unable to write file vertical_area_stability.sql");
+        std::fs::write("horizontal_area_strength.sql", self.horizontal_area_strength(id))
+            .expect("Unable to write file horizontal_area_strength.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
 }
