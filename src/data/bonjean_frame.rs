@@ -84,7 +84,7 @@ impl Table for BonjeanFrame {
         fs::write("bonjean_frame.sql", self.bonjean_frame(id)).expect("Unable to write file bonjean_frame.sql"); 
         std::thread::sleep(std::time::Duration::from_secs(1));     
         fs::write("frame_area.sql", self.frame_area(id)).expect("Unable to write file frame_area.sql");    
-        std::thread::sleep(std::time::Duration::from_secs(10));      
+        std::thread::sleep(std::time::Duration::from_secs(1));      
     }
     //
     fn to_sql(&self, id: usize) -> Vec<String> {

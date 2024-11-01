@@ -20,13 +20,12 @@ impl HoldGroup {
     //
     pub fn to_string(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM hold_group WHERE ship_id={ship_id};\n\n");
-        result += "INSERT INTO hold_group\n  (id, ship_id, space_id, name_rus, name_engl)\nVALUES\n";
+        result += "INSERT INTO hold_group\n  (ship_id, space_id, name_rus, name_engl)\nVALUES\n";
         self.parsed
             .iter()
-            .enumerate()
-            .for_each(|(id, (space_id, name_rus, name_engl))| {
+            .for_each(|(space_id, name_rus, name_engl)| {
                 result +=
-                    &format!("  ({id}, {ship_id}, {space_id}, '{name_rus}', '{name_engl}'),\n");
+                    &format!("  ({ship_id}, {space_id}, '{name_rus}', '{name_engl}'),\n");
             });
         result.pop();
         result.pop();

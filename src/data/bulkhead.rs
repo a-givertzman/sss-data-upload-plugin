@@ -20,13 +20,12 @@ impl Bulkhead {
     //
     pub fn to_string(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM bulkhead WHERE ship_id={ship_id};\n\n");
-        result += "INSERT INTO bulkhead\n  (id, ship_id, name_rus, name_engl, mass, category_id)\nVALUES\n";
+        result += "INSERT INTO bulkhead\n  (ship_id, name_rus, name_engl, mass, category_id)\nVALUES\n";
         self.parsed
             .iter()
-            .enumerate()
-            .for_each(|(id, (name_rus, name_engl, mass))| {
+            .for_each(|(name_rus, name_engl, mass)| {
                 result +=
-                    &format!("  ({id}, {ship_id}, '{name_rus}', '{name_engl}', {mass}, 22),\n");
+                    &format!("  ({ship_id}, '{name_rus}', '{name_engl}', {mass}, 22),\n");
             });
         result.pop();
         result.pop();

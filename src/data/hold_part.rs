@@ -20,12 +20,11 @@ impl HoldPart {
     //
     pub fn to_string(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM hold_part WHERE ship_id={ship_id};\n\n");
-        result += "INSERT INTO hold_part\n  (id, ship_id, space_id, code, group_space_id, group_index, left_bulkhead_code, right_bulkhead_code, bound_x1, bound_x2)\nVALUES\n";
+        result += "INSERT INTO hold_part\n  (ship_id, space_id, code, group_space_id, group_index, left_bulkhead_code, right_bulkhead_code, bound_x1, bound_x2)\nVALUES\n";
         self.parsed
             .iter()
-            .enumerate()
-            .for_each(|(id, (space_id, code, group_space_id, group_index, left_bulkhead_code, right_bulkhead_code, bound_x1, bound_x2))| {
-                result += &format!("  ({id}, {ship_id}, {space_id}, '{code}', {group_space_id}, {group_index}, ");
+            .for_each(|(space_id, code, group_space_id, group_index, left_bulkhead_code, right_bulkhead_code, bound_x1, bound_x2)| {
+                result += &format!("  ({ship_id}, {space_id}, '{code}', {group_space_id}, {group_index}, ");
                 if left_bulkhead_code.len() > 0 {
                     result += &format!(" '{left_bulkhead_code}',");
                 } else {
