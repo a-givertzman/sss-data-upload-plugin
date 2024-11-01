@@ -1,15 +1,15 @@
-//! Структура с данными поверхности парусности
+//! Структура с данными горизонтальных поверхностей
 use crate::error::Error;
 use crate::Table;
 
-/// Структура с данными поверхности парусности
-pub struct Windage {
+/// Структура с данными горизонтальных поверхностей
+pub struct HorizontalSurf {
     data: String,
-    /// d [m], Z cl sub [m], Lwl [m], Bwl [m], Av CS [m2], X  Av CS [m], Mvx CS [m3], Z Av CS [m], Mvz CS  [m3], A bow 0,15L [m2]
+    /// AREA [m2]	VCG [m]	LCG [m]	TCG [m]	X1 [m]	X2 [m]
     parsed: Vec<Vec<f64>>,
 }
 //
-impl  Windage {
+impl  HorizontalSurf {
     //
     pub fn new(data: String) -> Self {
         Self {
@@ -59,15 +59,15 @@ impl  Windage {
     }
 }
 //
-impl Table for Windage  {
+impl Table for HorizontalSurf  {
     //
     fn parse(&mut self) -> Result<(), Error> {
-        println!("Windage parse begin");
+        println!("HorizontalSurf parse begin");
         let mut data = crate::split_data(&self.data)?;
         data.remove(0);
         for row in data.into_iter() {  
             if row.len() != 10 {
-                return Err(Error::FromString(format!("Windage parse error: row.len() != 10, row={:?}", row)));
+                return Err(Error::FromString(format!("HorizontalSurf parse error: row.len() != 10, row={:?}", row)));
             }
             let mut values = Vec::new();          
             for value in row {
@@ -75,7 +75,7 @@ impl Table for Windage  {
             }
             self.parsed.push(values);
         }
-        println!("Windage parse ok");
+        println!("HorizontalSurf parse ok");
         //  dbg!(&self.parsed);
         Ok(())
     }

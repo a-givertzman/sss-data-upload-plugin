@@ -44,7 +44,7 @@ impl Table for Bulkhead {
         self.parsed = data
             .into_iter()
             .filter_map(|line| {
-                if line.len() == 3 {
+                if line.len() >= 3 {
                     Some((
                         line[0].to_owned(), // Name  RUS
                         line[1].to_owned(), // Name  ENGL

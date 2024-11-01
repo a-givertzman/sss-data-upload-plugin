@@ -11,6 +11,7 @@ mod load_constant;
 mod pantocaren;
 mod angle;
 mod windage;
+mod horizontal_surf;
 mod compartment;
 mod compartment_curve;
 mod min_metacentric_height_subdivision;
@@ -19,6 +20,7 @@ mod bulkhead_place;
 mod hold_part;
 mod hold_group;
 mod hold_curve;
+
 
 pub use ship_general::*;
 pub use table::*;
@@ -33,6 +35,7 @@ pub use load_constant::*;
 pub use pantocaren::*;
 pub use angle::*;
 pub use windage::*;
+pub use horizontal_surf::*;
 pub use compartment::*;
 pub use compartment_curve::*;
 pub use min_metacentric_height_subdivision::*;

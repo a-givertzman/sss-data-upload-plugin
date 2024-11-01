@@ -11,6 +11,7 @@ use crate::General;
 use crate::HoldCurve;
 use crate::HoldGroup;
 use crate::HoldPart;
+use crate::HorizontalSurf;
 use crate::HydrostaticCurves;
 use crate::LoadConstant;
 use crate::MinMetacentricHeightSubdivision;
@@ -161,6 +162,7 @@ impl Parser {
                         "pantocaren" => Box::new(Pantocaren::new(body)),
                         "angle" => Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
+                        "horizontal_surf" => Box::new(HorizontalSurf::new(body)),
                         "min_metacentric_height_subdivision" => Box::new(MinMetacentricHeightSubdivision::new(body)),
                         "bulkhead" => Box::new(Bulkhead::new(body)),
                         "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
