@@ -29,7 +29,7 @@ impl HoldCurve {
         let mut result: String = format!("DELETE FROM compartment_curve WHERE space_id IN (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id});\n\n");
         result += &format!("INSERT INTO compartment_curve\n  (ship_id, space_id, level, volume, buoyancy_x, buoyancy_y, buoyancy_z)\n");
         parsed_data.iter().for_each(|(level, volume, buoyancy_x, buoyancy_y, buoyancy_z, _)| {
-            result += &format!("SELECT  {ship_id}, (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id}), {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z} UNION ALL\n");
+            result += &format!("SELECT  {ship_id}, (SELECT space_id FROM hold_part_id WHERE code='{code}' AND ship_id={ship_id}), {level}, {volume}, {buoyancy_x}, {buoyancy_y}, {buoyancy_z} UNION ALL\n");
         });
         result = result.drain(..result.len() - 11).collect();
         result += ";\n\n\n";
@@ -47,7 +47,7 @@ impl HoldCurve {
         let mut result: String = format!("DELETE FROM grain_moment WHERE space_id IN (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id});\n\n");
         result += &format!("INSERT INTO grain_moment\n  (ship_id, space_id, level, moment)\n");
         parsed_data.iter().for_each(|(level, _, _, _, _, moment)| {
-            result += &format!("SELECT  {ship_id}, (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id}), {level}, {moment} UNION ALL\n");
+            result += &format!("SELECT  {ship_id}, (SELECT space_id FROM hold_part_id WHERE code='{code}' AND ship_id={ship_id}), {level}, {moment} UNION ALL\n");
         });
         result = result.drain(..result.len() - 11).collect();
         result += ";\n\n\n";

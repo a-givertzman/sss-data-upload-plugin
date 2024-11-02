@@ -18,7 +18,7 @@ impl HoldPart {
         }
     }
     //
-    pub fn to_string(&self, ship_id: usize) -> String {
+    pub fn hold_part(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM hold_part WHERE ship_id={ship_id};\n\n");
         result += "INSERT INTO hold_part\n  (ship_id, space_id, code, group_space_id, group_index, left_bulkhead_code, right_bulkhead_code, bound_x1, bound_x2)\nVALUES\n";
         self.parsed
@@ -36,6 +36,20 @@ impl HoldPart {
                     result += " NULL,";
                 }
                 result += &format!(" {bound_x1}, {bound_x2}),\n");
+            });
+        result.pop();
+        result.pop();
+        result.push(';');
+        result
+    } 
+    //
+    pub fn hold_part_id(&self, ship_id: usize) -> String {
+        let mut result = format!("DELETE FROM hold_part_id WHERE ship_id={ship_id};\n\n");
+        result += "INSERT INTO hold_part_id\n  (ship_id, space_id, code)\nVALUES\n";
+        self.parsed
+            .iter()
+            .for_each(|(space_id, code, ..)| {
+                result += &format!("  ({ship_id}, {space_id}, '{code}'),\n");
             });
         result.pop();
         result.pop();
@@ -80,11 +94,13 @@ impl Table for HoldPart {
     }
     //
     fn to_sql(&self, id: usize) -> Vec<String> {
-        vec![self.to_string(id)]
+        vec![self.hold_part_id(id), self.hold_part(id)]
     }
     //
     fn to_file(&self, id: usize) {
-        std::fs::write("hold_part.sql", self.to_string(id)).expect("Unable to write file hold_part.sql");           
+        std::fs::write("hold_part_id.sql", self.hold_part_id(id)).expect("Unable to write file hold_part_id.sql");           
+        std::thread::sleep(std::time::Duration::from_secs(1));  
+        std::fs::write("hold_part.sql", self.hold_part(id)).expect("Unable to write file hold_part.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }
