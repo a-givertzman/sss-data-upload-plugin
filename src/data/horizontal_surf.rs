@@ -55,7 +55,7 @@ impl Table for HorizontalSurf  {
         data.remove(0);
         for row in data.into_iter() {  
             if row.len() != 7 {
-                return Err(Error::FromString(format!("HorizontalSurf parse error: row.len() != 6, row={:?}", row)));
+                return Err(Error::FromString(format!("HorizontalSurf parse error: row.len() != 7, row={:?}", row)));
             }
             self.parsed.push(row);
         }

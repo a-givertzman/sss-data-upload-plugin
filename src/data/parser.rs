@@ -20,6 +20,7 @@ use crate::PhysicalFrame;
 use crate::StrengthForceLimit;
 use crate::Table;
 use crate::TheoreticalFrame;
+use crate::VerticalAreaStrength;
 use crate::Windage;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -162,6 +163,7 @@ impl Parser {
                         "pantocaren" => Box::new(Pantocaren::new(body)),
                         "angle" => Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
+                        "vertical_area_strength" => Box::new(VerticalAreaStrength::new(body)),
                         "horizontal_surf" => Box::new(HorizontalSurf::new(body)),
                         "min_metacentric_height_subdivision" => Box::new(MinMetacentricHeightSubdivision::new(body)),
                         "bulkhead" => Box::new(Bulkhead::new(body)),
