@@ -87,8 +87,8 @@ impl Table for PhysicalFrame {
         vec![self.to_string(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("physical_frame.sql", self.to_string(id)).expect("Unable to write file physical_frame.sql");           
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/frames/physical_frame.sql"), self.to_string(id)).expect("Unable to write file physical_frame.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

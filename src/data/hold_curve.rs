@@ -95,20 +95,20 @@ impl Table for HoldCurve {
             .collect()
     }
     //
-    fn to_file(&self, ship_id: usize) {
+    fn to_file(&self, ship_id: usize, name: &str) {
         let data: String = self
             .parsed
             .iter()
             .map(|(code, data)| self.to_compartment_curve(ship_id, code.to_owned(), data.to_vec()))
             .collect();
-        std::fs::write("hold_curve.sql", data).expect("Unable to write file hold_curve.sql");
+        std::fs::write(format!("../{name}/hold/hold_curve.sql"), data).expect("Unable to write file hold_curve.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
         let data: String = self
             .parsed
             .iter()
             .map(|(code, data)| self.to_grain_moment(ship_id, code.to_owned(), data.to_vec()))
             .collect();
-        std::fs::write("grain_moment.sql", data).expect("Unable to write file grain_moment.sql");
+        std::fs::write(format!("../{name}/hold/grain_moment.sql"), data).expect("Unable to write file grain_moment.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
 }

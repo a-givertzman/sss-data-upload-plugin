@@ -84,17 +84,17 @@ impl Table for Windage  {
         vec![self.waterline_length(id), self.volume_shift(id), self.bow_area(id), self.vertical_area_stability(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("waterline_length.sql", self.waterline_length(id))
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hidrostatic/waterline_length.sql"), self.waterline_length(id))
             .expect("Unable to write file waterline_length.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("volume_shift.sql", self.volume_shift(id))
+        std::fs::write(format!("../{name}/hidrostatic/volume_shift.sql"), self.volume_shift(id))
             .expect("Unable to write file volume_shift.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("bow_area.sql", self.bow_area(id))
+        std::fs::write(format!("../{name}/area/bow_area.sql"), self.bow_area(id))
             .expect("Unable to write file bow_area.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("vertical_area_stability.sql", self.vertical_area_stability(id))
+        std::fs::write(format!("../{name}/area/vertical_area_stability.sql"), self.vertical_area_stability(id))
             .expect("Unable to write file vertical_area_stability.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }

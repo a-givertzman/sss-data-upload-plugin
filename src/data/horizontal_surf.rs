@@ -68,11 +68,11 @@ impl Table for HorizontalSurf  {
         vec![self.horizontal_area_stability(id), self.horizontal_area_strength(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("horizontal_area_stability.sql", self.horizontal_area_stability(id))
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/area/horizontal_area_stability.sql"), self.horizontal_area_stability(id))
             .expect("Unable to write file horizontal_area_stability.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("horizontal_area_strength.sql", self.horizontal_area_strength(id))
+        std::fs::write(format!("../{name}/area/horizontal_area_strength.sql"), self.horizontal_area_strength(id))
             .expect("Unable to write file horizontal_area_strength.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }

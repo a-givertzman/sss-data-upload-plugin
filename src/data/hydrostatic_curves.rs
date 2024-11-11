@@ -159,39 +159,39 @@ impl Table for HydrostaticCurves {
         result
     }
     //
-    fn to_file(&self, id: usize) {
-        fs::write("center_draught.sql", self.center_draught(id))
+    fn to_file(&self, id: usize, name: &str) {
+        fs::write(format!("../{name}/hidrostatic/center_draught.sql"), self.center_draught(id))
             .expect("Unable to write file center_draught.sql");
         sleep(std::time::Duration::from_secs(1));
-        fs::write("waterline_breadth.sql", self.waterline_breadth(id))
+        fs::write(format!("../{name}/hidrostatic/waterline_breadth.sql"), self.waterline_breadth(id))
             .expect("Unable to write file waterline_breadth.sql");
         sleep(std::time::Duration::from_secs(1));
         fs::write(
-            "waterline_area.sql",
+            format!("../{name}/hidrostatic/waterline_area.sql"),
             self.hydrostatic_to_sql(&self.waterline_area, "waterline_area", id),
         )
         .expect("Unable to write file waterline_area.sql");
         sleep(std::time::Duration::from_secs(1));
         fs::write(
-            "center_waterline.sql",
+            format!("../{name}/hidrostatic/center_waterline.sql"),
             self.hydrostatic_to_sql(&self.center_waterline, "center_waterline", id),
         )
         .expect("Unable to write file center_waterline.sql");
         sleep(std::time::Duration::from_secs(1));
         fs::write(
-            "mean_draught.sql",
+            format!("../{name}/hidrostatic/mean_draught.sql"),
             self.hydrostatic_to_sql(&self.mean_draught, "mean_draught", id),
         )
         .expect("Unable to write file mean_draught.sql");
         sleep(std::time::Duration::from_secs(1));
         fs::write(
-            "rad_trans.sql",
+            format!("../{name}/hidrostatic/rad_trans.sql"),
             self.hydrostatic_to_sql(&self.rad_trans, "rad_trans", id),
         )
         .expect("Unable to write file rad_trans.sql");
         sleep(std::time::Duration::from_secs(1));
         fs::write(
-            "rad_long.sql",
+            format!("../{name}/hidrostatic/rad_long.sql"),
             self.hydrostatic_to_sql(&self.rad_long, "rad_long", id),
         )
         .expect("Unable to write file rad_long.sql");

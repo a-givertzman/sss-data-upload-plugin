@@ -64,8 +64,8 @@ impl Table for HoldGroup {
         vec![self.to_string(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("hold_group.sql", self.to_string(id)).expect("Unable to write file hold_group.sql");           
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hold/hold_group.sql"), self.to_string(id)).expect("Unable to write file hold_group.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

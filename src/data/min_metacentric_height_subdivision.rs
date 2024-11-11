@@ -63,8 +63,8 @@ impl Table for MinMetacentricHeightSubdivision {
         vec![self.to_string(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("min_metacentric_height_subdivision.sql", self.to_string(id)).expect("Unable to write file min_metacentric_height_subdivision.sql");           
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hidrostatic/min_metacentric_height_subdivision.sql"), self.to_string(id)).expect("Unable to write file min_metacentric_height_subdivision.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

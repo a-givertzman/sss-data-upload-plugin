@@ -67,9 +67,9 @@ impl Table for CompartmentCurve {
         self.parsed.iter().map(|(name, data)| self.to_string(ship_id, name.to_owned(), data.to_vec())).collect()
     }
     //
-    fn to_file(&self, ship_id: usize) {
+    fn to_file(&self, ship_id: usize, name: &str) {
         let data: String = self.parsed.iter().map(|(name, data)| self.to_string(ship_id, name.to_owned(), data.to_vec())).collect();
-        std::fs::write("compartment_curve.sql", data)
+        std::fs::write(format!("../{name}/loads/compartment_curve.sql"), data)
             .expect("Unable to write file compartment_curve.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }

@@ -97,10 +97,10 @@ impl Table for HoldPart {
         vec![self.hold_part_id(id), self.hold_part(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("hold_part_id.sql", self.hold_part_id(id)).expect("Unable to write file hold_part_id.sql");           
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hold/hold_part_id.sql"), self.hold_part_id(id)).expect("Unable to write file hold_part_id.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
-        std::fs::write("hold_part.sql", self.hold_part(id)).expect("Unable to write file hold_part.sql");           
+        std::fs::write(format!("../{name}/hold/hold_part.sql"), self.hold_part(id)).expect("Unable to write file hold_part.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }

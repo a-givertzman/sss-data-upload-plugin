@@ -23,6 +23,10 @@ impl General {
         }
     }
     //
+    pub fn ship_name(&self) -> Result<String, Error> {
+        Ok("Sofia".to_owned())
+    }
+    //
     pub fn ship_id(&self) -> Result<usize, Error> {
         Ok(2)
   /*      println!("General parse ok");
@@ -142,7 +146,7 @@ impl Table for General {
         result
     }
     
-    fn to_file(&self, id: usize) {
+    fn to_file(&self, id: usize, name: &str) {
         //TODO
     }
     

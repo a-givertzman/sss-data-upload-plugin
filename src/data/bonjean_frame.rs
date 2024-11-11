@@ -80,10 +80,10 @@ impl Table for BonjeanFrame {
         Ok(())
     }
     //
-    fn to_file(&self, id: usize) {
-        fs::write("bonjean_frame.sql", self.bonjean_frame(id)).expect("Unable to write file bonjean_frame.sql"); 
+    fn to_file(&self, id: usize, name: &str) {
+        fs::write(format!("../{name}/frames/bonjean_frame.sql"), self.bonjean_frame(id)).expect("Unable to write file bonjean_frame.sql"); 
         std::thread::sleep(std::time::Duration::from_secs(1));     
-        fs::write("frame_area.sql", self.frame_area(id)).expect("Unable to write file frame_area.sql");    
+        fs::write(format!("../{name}/hidrostatic/frame_area.sql"), self.frame_area(id)).expect("Unable to write file frame_area.sql");    
         std::thread::sleep(std::time::Duration::from_secs(1));      
     }
     //

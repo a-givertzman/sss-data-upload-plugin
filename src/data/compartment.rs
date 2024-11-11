@@ -77,8 +77,8 @@ impl Table for Compartment {
         Ok(())
     }
     //
-    fn to_file(&self, ship_id: usize) {
-        std::fs::write("load_base.sql", self.to_string(ship_id))
+    fn to_file(&self, ship_id: usize, name: &str) {
+        std::fs::write(format!("../{name}/loads/load_base.sql"), self.to_string(ship_id))
             .expect("Unable to write file compartment.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }

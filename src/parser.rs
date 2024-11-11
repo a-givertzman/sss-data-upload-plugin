@@ -1,5 +1,6 @@
 //! Класс-коллекция таблиц. Проверяет данные и выполняет их запись
 use crate::error::Error;
+use crate::parse_tests::ShipGeneral;
 use crate::Angle;
 use crate::ApiServer;
 use crate::BonjeanFrame;
@@ -25,6 +26,8 @@ use crate::Windage;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
+use calamine::Range;
+use calamine::{Reader, open_workbook, Xlsx, Data};
 //use api_tools::client::api_query::*;
 //use api_tools::client::api_request::ApiRequest;
 
@@ -49,7 +52,7 @@ impl Parser {
         }
     }
     /// Конвертация и проверка данных
-    pub fn convert(&mut self) -> Result<(), Error> {
+    pub fn convert_data(&mut self) -> Result<(), Error> {
         println!("Parser convert begin");
         let json_data: serde_json::Value = serde_json::from_str(&self.data)?;
         //  println!("Data: {}", json_data);
@@ -90,7 +93,7 @@ impl Parser {
             })
             .collect();
 
-        let mut general = General::new(
+        let general = General::new(
             fields.get("general").ok_or(Error::FromString(format!(
                 "Parser convert error: no general!"
             )))?.to_string(),
@@ -185,10 +188,28 @@ impl Parser {
         println!("Parser convert end");
         Ok(())
     }
+    /// Конвертация тестов
+    pub fn convert_tests(&mut self, path: &str) -> Result<(), Error> {
+        let mut workbook: Xlsx<_> = open_workbook(path).expect("Cannot open file");
+        let workbook: Vec<(String, Range<Data>)> = workbook.worksheets().into_iter().filter(|(tag, range)| range.used_cells().count() > 0 ).collect();
+        for (tag, data) in workbook {
+            let data: Vec<&[Data]> = data.rows().filter(|v| v.is_empty()).collect();
+            match tag.to_lowercase().as_str()  {
+                text => {
+                    let mut table: Box<dyn Table> = match text {
+                        "general" => Box::new(ShipGeneral::new(data)),
+                        _ => continue,
+                    };
+                }
+            }
+        }
+        dbg!(workbook);
+        Ok(())
+    }
     /// Запись данных в БД
     pub fn write_to_db(mut self) -> Result<(), Error> {
         println!("Parser write_to_db begin");
-        let mut general = self.general.take().ok_or(Error::FromString(
+        let general = self.general.take().ok_or(Error::FromString(
             "Parser write_to_db error: no general".to_owned(),
         ))?;
         let ship_id = general.ship_id()?;
@@ -218,14 +239,22 @@ impl Parser {
         println!("Parser write_to_file begin");
         if let Some(general) = self.general {
             let ship_id = general.ship_id()?;
-            general.to_file(ship_id);
+            let ship_name = general.ship_name()?;
+
+            std::fs::create_dir_all(format!("../{ship_name}/area/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/frames/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/hidrostatic/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/hold/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/loads/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/tests/"))?;
+            general.to_file(ship_id, &ship_name);
             if let Some(physical_frame) = self.physical_frame {
-                physical_frame.to_file(ship_id);
+                physical_frame.to_file(ship_id, &ship_name);
             }
             for (table_name, table) in self.parsed {
                 println!("{table_name} to_file begin");
                 std::thread::sleep(std::time::Duration::from_secs(1));
-                table.to_file(ship_id);
+                table.to_file(ship_id, &ship_name);
                 println!("{table_name} to_file end");
             }
         } else {

@@ -89,11 +89,11 @@ impl Table for Angle {
         vec![self.entry_angle(id), self.flooding_angle(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("entry_angle.sql", self.entry_angle(id))
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hidrostatic/entry_angle.sql"), self.entry_angle(id))
             .expect("Unable to write file entry_angle.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
-        std::fs::write("flooding_angle.sql", self.flooding_angle(id))
+        std::fs::write(format!("../{name}/hidrostatic/flooding_angle.sql"), self.flooding_angle(id))
             .expect("Unable to write file flooding_angle.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));
     }

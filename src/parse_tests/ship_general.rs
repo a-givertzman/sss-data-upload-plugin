@@ -1,17 +1,21 @@
-//! Структура с данными горизонтальных поверхностей
+//! Общие данные по судну
+use std::rc::Rc;
+
+use calamine::Data;
+
 use crate::error::Error;
 use crate::Table;
 
-/// Структура с данными горизонтальных поверхностей
-pub struct VerticalAreaStrength {
-    data: String,
-    /// name	area [m2]	X1 [m]	X2 [m]
+/// Общие данные по судну
+pub struct ShipGeneral {
+    data: Rc<Vec<[Data]>>,
+    /// name	value
     parsed: Vec<Vec<String>>,
 }
 //
-impl  VerticalAreaStrength {
+impl ShipGeneral {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Rc<Vec<[Data]>>) -> Self {
         Self {
             data,
             parsed: Vec::new(), 
@@ -33,7 +37,7 @@ impl  VerticalAreaStrength {
     }
 }
 //
-impl Table for VerticalAreaStrength  {
+impl Table for ShipGeneral  {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("VerticalAreaStrength parse begin");

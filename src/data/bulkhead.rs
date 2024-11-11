@@ -64,8 +64,8 @@ impl Table for Bulkhead {
         vec![self.to_string(id)]
     }
     //
-    fn to_file(&self, id: usize) {
-        std::fs::write("bulkhead.sql", self.to_string(id)).expect("Unable to write file bulkhead.sql");           
+    fn to_file(&self, id: usize, name: &str) {
+        std::fs::write(format!("../{name}/hold/bulkhead.sql"), self.to_string(id)).expect("Unable to write file bulkhead.sql");           
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
 }
