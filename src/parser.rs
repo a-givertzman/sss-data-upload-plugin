@@ -1,5 +1,7 @@
 //! Класс-коллекция таблиц. Проверяет данные и выполняет их запись
 use crate::error::Error;
+use crate::parse_tests;
+use crate::parse_tests::BulkCargo;
 use crate::parse_tests::ShipGeneral;
 use crate::Angle;
 use crate::ApiServer;
@@ -191,19 +193,26 @@ impl Parser {
     /// Конвертация тестов
     pub fn convert_tests(&mut self, path: &str) -> Result<(), Error> {
         let mut workbook: Xlsx<_> = open_workbook(path).expect("Cannot open file");
-        let workbook: Vec<(String, Range<Data>)> = workbook.worksheets().into_iter().filter(|(tag, range)| range.used_cells().count() > 0 ).collect();
+        let workbook: Vec<(String, Range<Data>)> = workbook.worksheets().into_iter().filter(|(_, range)| range.used_cells().count() > 0 ).collect();
         for (tag, data) in workbook {
-            let data: Vec<&[Data]> = data.rows().filter(|v| v.is_empty()).collect();
+            let data: Vec<&[Data]> = data.rows().filter(|v| !v.is_empty()).collect();
+            let data = data.iter().map(|v| v.iter().map(|v| v.to_string()).collect()).collect();
             match tag.to_lowercase().as_str()  {
                 text => {
                     let mut table: Box<dyn Table> = match text {
                         "general" => Box::new(ShipGeneral::new(data)),
+                        "compartments" => Box::new(parse_tests::Compartment::new(data)),
+                        "bulkcargo" => Box::new(BulkCargo::new(data)),
+                        "grainbulkheads" => Box::new(parse_tests::GrainBulkheads::new(data)),
+                        "stores" => Box::new(parse_tests::Stores::new(data)),                        
                         _ => continue,
+                     //   _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
+                    table.parse()?;
+                    self.parsed.insert(text.to_owned(), table);
                 }
             }
         }
-        dbg!(workbook);
         Ok(())
     }
     /// Запись данных в БД
@@ -246,7 +255,7 @@ impl Parser {
             std::fs::create_dir_all(format!("../{ship_name}/hidrostatic/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/hold/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/loads/"))?;
-            std::fs::create_dir_all(format!("../{ship_name}/tests/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/test/"))?;
             general.to_file(ship_id, &ship_name);
             if let Some(physical_frame) = self.physical_frame {
                 physical_frame.to_file(ship_id, &ship_name);

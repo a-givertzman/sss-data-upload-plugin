@@ -51,22 +51,22 @@ impl Table for Compartment {
                 "Compartment error: no space_id in row".to_owned(),
             ))?.to_string();
             let name_rus = row.get(2).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no name_rus in row".to_owned(),
             ))?.to_string();
             let ab_rus = row.get(3).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no ab_rus in row".to_owned(),
             ))?.to_string();
             let name_engl = row.get(4).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no name_engl in row".to_owned(),
             ))?.to_string(); 
             let ab_engl = row.get(5).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no ab_engl in row".to_owned(),
             ))?.to_string(); 
             let fr_min = row.get(6).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no fr_min in row".to_owned(),
             ))?;
             let fr_max = row.get(7).ok_or(Error::FromString(
-                "Compartment error: no space_id in row".to_owned(),
+                "Compartment error: no fr_max in row".to_owned(),
             ))?;
             let bound_x1 = self.physical_frame.value(fr_min)?.to_string();
             let bound_x2 = self.physical_frame.value(fr_max)?.to_string();
@@ -79,7 +79,7 @@ impl Table for Compartment {
     //
     fn to_file(&self, ship_id: usize, name: &str) {
         std::fs::write(format!("../{name}/loads/load_base.sql"), self.to_string(ship_id))
-            .expect("Unable to write file compartment.sql");
+            .expect("Unable to write file load_base.sql");
         std::thread::sleep(std::time::Duration::from_secs(1));  
     }
     //

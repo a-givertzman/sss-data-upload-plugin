@@ -24,7 +24,6 @@ fn main() {
     // let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/result3.json");
     // let data = include_str!("/home/konstantin/code/rust-proj/sss-data-upload-plugin/src/bin/hydrostatic.json");
     let data = include_str!("../src/bin/sofia.json");
-    let test = include_str!("../src/bin/sofia.json");
     //   let mut stdout = io::stdout().lock();
     //   stdout.write_all(data.as_bytes()).unwrap();
     //  let mut data = String::new();
