@@ -19,9 +19,9 @@ impl Stores {
     }
     //
     fn to_string(&self, ship_id: usize) -> String {
-        let mut result = "INSERT INTO cargo\n  (ship_id, name, mass, bound_x1, bound_x2, mass_shift_x, mass_shift_y, mass_shift_z, category_id)\n  VALUES\n".to_string();
+        let mut result = "INSERT INTO cargo\n  (ship_id, name, mass, bound_x1, bound_x2, mass_shift_x, mass_shift_y, mass_shift_z, category_id)\nVALUES\n".to_string();
         self.parsed.iter().for_each(|(name, mass, dx, dy, dz, x1, x2)| {
-            result += &format!(" ({ship_id}, '{name}', {mass}, {x1}, {x2}, {dx}, {dy}, {dz}, 9),\n");
+            result += &format!("  ({ship_id}, '{name}', {mass}, {x1}, {x2}, {dx}, {dy}, {dz}, 9),\n");
         });
         result.pop();
         result.pop();

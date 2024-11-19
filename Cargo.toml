@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 testing = { git = "https://github.com/a-givertzman/rust-testing.git", version = "0.1.1" }
 debugging = { git = "https://github.com/a-givertzman/rust-debuging.git", version = "0.0.1" }
-api-tools = { git = "https://github.com/a-givertzman/rust-api-tools.git", version = "0.0.6" }
+api-tools = { git = "https://github.com/a-givertzman/rust-api-tools.git", branch = "Socket-Message" }
 
 log = "^0.4"
 env_logger = "^0.11"

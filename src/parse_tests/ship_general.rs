@@ -34,7 +34,7 @@ impl ShipGeneral {
         let icing = self.parsed.get("Обледенение").expect("Test ShipGeneral to_string no value for icing!");
         result += &format!("UPDATE ship SET icing_type_id=(SELECT id FROM ship_icing WHERE icing_type='{icing}') WHERE ship_id={ship_id};\n"); 
 
-        let wetting_timber = self.parsed.get("Намокание палубного лесного груза").expect("Test ShipGeneral to_string no value for wetting_timber!");
+        let wetting_timber = self.parsed.get("Намокание палубного лесного груза %").expect("Test ShipGeneral to_string no value for wetting_timber!");
         let wetting_timber = wetting_timber.parse::<f64>().map_or("NULL".to_owned(), |v| v.to_string() );        
         result += &format!("UPDATE ship_parameters SET value='{wetting_timber}' WHERE key='Wetting of deck timber' AND ship_id={ship_id};\n");
 

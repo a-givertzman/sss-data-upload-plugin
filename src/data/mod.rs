@@ -20,7 +20,7 @@ mod bulkhead_place;
 mod hold_part;
 mod hold_group;
 mod hold_curve;
-
+mod draft_mark;
 
 pub use ship_general::*;
 pub use table::*;
@@ -44,3 +44,4 @@ pub use bulkhead_place::*;
 pub use hold_part::*;
 pub use hold_group::*;
 pub use hold_curve::*;
+pub use draft_mark::*;

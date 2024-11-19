@@ -9,159 +9,114 @@ use crate::{ApiServer, Table};
 /// Структура с данными для ship_name и ship_parameters
 pub struct General {
     data: String,
-    parsed: HashMap<String, (String, Option<String>)>,
+    parameters: Vec<(String, f64, String)>,
+    map: HashMap<String, String>,
     api_server: Rc<RefCell<ApiServer>>,
 }
 //
 impl General {
     //
-    pub fn new (data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
+    pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
         Self {
             data,
-            parsed: HashMap::new(),
+            parameters: Vec::new(),
+            map: HashMap::new(),
             api_server,
         }
     }
     //
     pub fn ship_name(&self) -> Result<String, Error> {
-        Ok("Sofia".to_owned())
+        Ok(self
+            .map
+            .get("Ship name")
+            .ok_or(Error::FromString(format!(
+                "General ship_name error: no ship name in map:{:?}",
+                self.map
+            )))?
+            .clone())
     }
     //
     pub fn ship_id(&self) -> Result<usize, Error> {
         Ok(2)
-  /*      println!("General parse ok");
-        let name = format!(
-            "'{}'",
-            self.parsed.get("Name of ship").ok_or(Error::FromString(format!(
-                "parse_general no 'Name of ship'!"
-            )))?.0
-        );
-        let mut sql_name = "name".to_owned();
-        let mut sql_values = format!("{name}");
-        if let Some(project) = self.parsed.get("Name of project") {
-            sql_name += &format!(", project");
-            sql_values += &format!(", '{}'", project.0);
-        }
-        if let Some(year_of_built) = self.parsed.get("Year of built") {
-            sql_name += &format!(", year_of_built");
-            sql_values += &format!(", {}", year_of_built.0.parse::<i32>()?);
-        }
-        if let Some(place_of_built) = self.parsed.get("Place of built") {
-            sql_name += &format!(", place_of_built");
-            sql_values += &format!(", '{}'", place_of_built.0);
-        }
-        if let Some(imo) = self.parsed.get("IMO number") {
-            sql_name += &format!(", IMO");
-            sql_values += &format!(", {}", imo.0.parse::<i32>()?);
-        }
-        if let Some(mmsi) = self.parsed.get("MMSI") {
-            sql_name += &format!(", MMSI");
-            sql_values += &format!(", {}", mmsi.0.parse::<i32>()?);
-        }  
-        let sql = "INSERT INTO ship_name (".to_owned() + 
-        &sql_name + ") VALUES (" + &sql_values + ");";
-        self
-            .api_server
-            .borrow_mut()
-            .fetch(&sql)?;        
-        let result = self
-            .api_server
-            .borrow_mut()
-            .fetch(&format!(" SELECT id FROM ship_name WHERE name={name}; "))?;
-        let id = result[0]
-            .get("id")
-            .ok_or(Error::FromString(format!(
-                "parse_general no ship_id in reply"
-            )))?
-            .as_u64()
-            .ok_or(Error::FromString(format!(
-                "parse_general wrong ship_id type in reply"
-            )))?;
-        Ok(id as usize)*/
     }
     //
-    fn split_data(&mut self) -> Result<Vec<Vec<String>>, Error> {
-        Ok(self
-            .data
-            .replace(" ", "")
-            .replace(",", ".")
-            .split("\r\n")
-            .map(|line| {
-                line.split(';')
-                    .filter(|s| s.len() > 0)
-                    .map(|s| s.to_owned())
-                    .collect::<Vec<String>>()
-            })
-            .filter(|s| s.len() > 0)
-            .collect())
+    fn get(&self, key: &str) -> String {
+        if let Some(value) = self.map.get(key) {
+            if value.as_str() != "" && value.as_str() != "-" {
+                return format!("'{value}'");
+            }
+        }
+        "NULL".to_owned()
+    }
+    //
+    pub fn ship_parameters(&self, ship_id: usize) -> String {
+        let mut result = format!("DELETE FROM ship_parameters WHERE ship_id={ship_id};\n\n");
+        result += "INSERT INTO ship_parameters\n  (ship_id, key, value, unit_id)\nVALUES\n";
+        self.parameters
+            .iter()
+            .for_each(|(name, value, value_type)| {
+                let value_type_id = match value_type.as_str() {
+                    "-" | "" => "NULL".to_owned(),
+                    s => format!("(SELECT id FROM unit WHERE symbol_eng = '{s}')"),
+                };
+                result += &format!("  ({ship_id}, '{name}', {value}, {value_type_id}),\n");
+            });
+        result.pop();
+        result.pop();
+        result.push(';');
+        result
+    }
+    //
+    pub fn ship(&self, ship_id: usize) -> String {
+        let name = self.get("Ship name");
+        let project = self.get("Project");
+        let year_of_built = self.get("Year of build");
+        let place_of_built = self.get("Place of build");
+        let imo = self.get("IMO number");
+        let mmsi = self.get("MMSI");
+        let ship_type = self.get("Type of ship");
+        let navigation_area = self.get("Navigation area");
+        let freeboard_type = self.get("freeboardType");
+        let mut result = format!("DELETE FROM ship WHERE id={ship_id};\n\n");
+        result += "INSERT INTO ship\n  (id, name, project, year_of_built, place_of_built, IMO, MMSI, ship_type_id, icing_type_id, icing_timber_type_id, navigation_area_id, freeboard_type, geometry_id)\nVALUES\n";
+        result += &format!("  ({ship_id}, {name}, {project}, {year_of_built}, {place_of_built}, {imo}, {mmsi}, (SELECT id FROM ship_type WHERE type_rmrs = (SELECT id FROM ship_type_rmrs WHERE title_eng = {ship_type})), 1, 1, (SELECT id FROM navigation_area WHERE area ={navigation_area}), {freeboard_type}, {ship_id});\n\n");
+        result
     }
 }
 
 impl Table for General {
     //
     fn parse(&mut self) -> Result<(), Error> {
-        let data: Vec<Vec<&str>> = 
-            self.data
+        let data: Vec<Vec<String>> = self
+            .data
             .split("\r\n")
-            .filter(|s| s.len() > 0)
-            .map(|s| s.split(';').collect())
+            .map(|line| line.split(';').map(|s| s.to_owned()).collect()).collect();
+        let data: Vec<Vec<String>> = data.into_iter()
+            .filter(|s| s.len() >= 3 )
             .collect();
-        for line in &data {
-            match line.len() {
-                2 => self.parsed.insert(line[0].to_owned(), (line[1].to_owned(), None)),
-                3 => self.parsed.insert(line[0].to_owned(), (line[2].to_owned(), Some(line[1].to_owned()))),
-                _ => return Err(Error::FromString(
-                    "General parse error: no data! line:{line}".to_owned(),
-                )),                
-            };
-        }
+        self.parameters = data
+            .iter()
+            .filter_map(|v| match (v[0].clone(), v[2].parse::<f64>()) {
+                (name, Ok(value)) => Some((name, value, v[1].to_owned())),
+                _ => None,
+            })
+            .collect();
+        self.map = data
+            .iter()
+            .map(|v| (v[0].to_owned(), v[2].to_owned()))
+            .collect();
         Ok(())
     }
-    //
+    //   //
     fn to_sql(&self, id: usize) -> Vec<String> {
-        let mut result = Vec::new();
-        result.push(format!("DELETE FROM ship_parameters WHERE ship_id={id};"));
-        let mut sql1 =
-            "INSERT INTO ship_parameters (ship_id, key, value, value_type) VALUES".to_owned();
-        let mut sql2 =
-            "INSERT INTO ship_parameters (ship_id, key, value, value_type, unit) VALUES".to_owned();
-        for (key, (value, unit)) in &self.parsed {
-            let value_type = if value.parse::<f64>().is_ok() {
-                "real"
-            } else {
-                "text"
-            };
-            if let Some(unit) = unit {
-                sql2 += &format!(" ({id}, '{key}', '{value}', '{value_type}', '{unit}'),").to_owned();
-            } else {
-                sql1 += &format!(" ({id}, '{key}', '{value}', '{value_type}'),").to_owned();
-            }
-        }
-        sql1.pop();
-        sql1.push(';');
-        sql2.pop();
-        sql2.push(';');
-        result.push(sql1);
-        result.push(sql2);
-        result
+        vec![self.ship(id), self.ship_parameters(id)]
     }
-    
+    //
     fn to_file(&self, id: usize, name: &str) {
-        //TODO
-    }
-    
-    fn data_to_sql(&self, data: &Vec<(f64, f64)>, table_name: &str, ship_id: usize) -> Vec<String> {
-        let mut result = Vec::new();
-        result.push(std::format!(" DELETE FROM {table_name} WHERE ship_id={ship_id};\n\n"));
-        let mut sql = std::format!(" INSERT INTO {table_name}\n  (ship_id, key, value)\nVALUES\n");
-        data.iter().for_each(|(k, v)| {
-            sql += &std::format!("  ({ship_id}, {k}, {v}),\n");
-        });
-        sql.pop();
-        sql.pop();
-        sql.push(';');
-    //    dbg!(&sql);
-        result.push(sql);
-        result
+        let mut tmp = String::new();
+        tmp += &self.ship(id);
+        tmp += &self.ship_parameters(id);
+        std::fs::write(format!("../{name}/ship.sql"), tmp).expect("Unable to write file ship.sql");
+        std::thread::sleep(std::time::Duration::from_secs(1));
     }
 }

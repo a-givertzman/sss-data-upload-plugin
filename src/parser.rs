@@ -10,6 +10,7 @@ use crate::Bulkhead;
 use crate::BulkheadPlace;
 use crate::Compartment;
 use crate::CompartmentCurve;
+use crate::DraftMark;
 use crate::General;
 use crate::HoldCurve;
 use crate::HoldGroup;
@@ -95,13 +96,13 @@ impl Parser {
             })
             .collect();
 
-        let general = General::new(
+        let mut general = General::new(
             fields.get("general").ok_or(Error::FromString(format!(
                 "Parser convert error: no general!"
             )))?.to_string(),
             Rc::clone(&self.api_server),
         );
-   //     general.parse()?;
+        general.parse()?;
         self.general = Some(general);
 
         let mut physical_frame = PhysicalFrame::new(fields.get("physical_frame").ok_or(
@@ -173,6 +174,7 @@ impl Parser {
                         "min_metacentric_height_subdivision" => Box::new(MinMetacentricHeightSubdivision::new(body)),
                         "bulkhead" => Box::new(Bulkhead::new(body)),
                         "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
+                        "draft_mark" => Box::new(DraftMark::new(body)),
                         "general" => continue,
                         "physical_frame" => continue,
                         "compartment" => continue,
@@ -251,6 +253,7 @@ impl Parser {
             let ship_name = general.ship_name()?;
 
             std::fs::create_dir_all(format!("../{ship_name}/area/"))?;
+            std::fs::create_dir_all(format!("../{ship_name}/draft/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/frames/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/hidrostatic/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/hold/"))?;
