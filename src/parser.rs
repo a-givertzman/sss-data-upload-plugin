@@ -40,7 +40,8 @@ pub struct Parser {
     api_server: Rc<RefCell<ApiServer>>,
     general: Option<General>,
     physical_frame: Option<Rc<PhysicalFrame>>,
-    parsed: HashMap<String, Box<dyn Table>>,
+    parsed_data: HashMap<String, Box<dyn Table>>,
+    parsed_tests: HashMap<String, Box<dyn Table>>,
 }
 ///
 impl Parser {
@@ -51,7 +52,8 @@ impl Parser {
             api_server,
             general: None,
             physical_frame: None,
-            parsed: HashMap::<String, Box<dyn Table>>::new(),
+            parsed_data: HashMap::<String, Box<dyn Table>>::new(),
+            parsed_tests: HashMap::<String, Box<dyn Table>>::new(),
         }
     }
     /// Конвертация и проверка данных
@@ -125,27 +127,27 @@ impl Parser {
             ),
         ));
         compartment.parse()?;
-        self.parsed.insert("compartment".to_owned(), compartment);
+        self.parsed_data.insert("compartment".to_owned(), compartment);
 
         let mut compartment_curve = Box::new(CompartmentCurve::new(compartment_curve_data));
         compartment_curve.parse()?;
-        self.parsed.insert("compartment_curve".to_owned(), compartment_curve);
+        self.parsed_data.insert("compartment_curve".to_owned(), compartment_curve);
 
         let mut hold_group = Box::new(HoldGroup::new(fields.get("hold_group").ok_or(
             Error::FromString(format!("Parser convert error: no hold_group!")),
         )?.to_string()));
         hold_group.parse()?;
-        self.parsed.insert("hold_group".to_owned(), hold_group);
+        self.parsed_data.insert("hold_group".to_owned(), hold_group);
 
         let mut hold_part = Box::new(HoldPart::new(fields.get("hold_part").ok_or(
             Error::FromString(format!("Parser convert error: no hold_part!")),
         )?.to_string()));
         hold_part.parse()?;
-        self.parsed.insert("hold_part".to_owned(), hold_part);
+        self.parsed_data.insert("hold_part".to_owned(), hold_part);
 
         let mut hold_curve = Box::new(HoldCurve::new(hold_curve_data));
         hold_curve.parse()?;
-        self.parsed.insert("hold_curve".to_owned(), hold_curve);
+        self.parsed_data.insert("hold_curve".to_owned(), hold_curve);
 
         for (tag, body) in fields {
             match tag.as_str()  {
@@ -185,7 +187,7 @@ impl Parser {
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
-                    self.parsed.insert(text.to_owned(), table);
+                    self.parsed_data.insert(text.to_owned(), table);
                 }
             }
         }
@@ -211,7 +213,7 @@ impl Parser {
                      //   _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
-                    self.parsed.insert(text.to_owned(), table);
+                    self.parsed_tests.insert(text.to_owned(), table);
                 }
             }
         }
@@ -228,7 +230,13 @@ impl Parser {
         general.to_sql(ship_id).iter().for_each(|sql| {
             full_sql += sql;
         });
-        self.parsed.iter().next().map(|(_, table)| {
+        self.parsed_data.iter().next().map(|(_, table)| {
+            table
+                .to_sql(ship_id)
+                .iter()
+                .for_each(|sql| full_sql += &sql);
+        });
+        self.parsed_tests.iter().next().map(|(_, table)| {
             table
                 .to_sql(ship_id)
                 .iter()
@@ -251,7 +259,6 @@ impl Parser {
         if let Some(general) = self.general {
             let ship_id = general.ship_id()?;
             let ship_name = general.ship_name()?;
-
             std::fs::create_dir_all(format!("../{ship_name}/area/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/draft/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/frames/"))?;
@@ -263,12 +270,30 @@ impl Parser {
             if let Some(physical_frame) = self.physical_frame {
                 physical_frame.to_file(ship_id, &ship_name);
             }
-            for (table_name, table) in self.parsed {
+            for (table_name, table) in self.parsed_data {
                 println!("{table_name} to_file begin");
                 std::thread::sleep(std::time::Duration::from_secs(1));
                 table.to_file(ship_id, &ship_name);
                 println!("{table_name} to_file end");
             }
+            let mut tests = String::new();
+            println!("tests to_file begin");
+            self.parsed_tests.get("general").ok_or(Error::FromString(format!("Parser write_to_file tests error: no table general!")))?.to_sql(ship_id).iter().for_each(|s| tests += &s );
+            tests += "\n\n";
+            self.parsed_tests.get("compartments").ok_or(Error::FromString(format!("Parser write_to_file tests error: no table general!")))?.to_sql(ship_id).iter().for_each(|s| tests += &s );
+            tests += "\n\n";
+            self.parsed_tests.get("stores").ok_or(Error::FromString(format!("Parser write_to_file tests error: no table general!")))?.to_sql(ship_id).iter().for_each(|s| tests += &s );
+            tests += "\n\n";
+            self.parsed_tests.get("grainbulkheads").ok_or(Error::FromString(format!("Parser write_to_file tests error: no table general!")))?.to_sql(ship_id).iter().for_each(|s| tests += &s );
+            tests += "\n\n";
+            self.parsed_tests.get("bulkcargo").ok_or(Error::FromString(format!("Parser write_to_file tests error: no table general!")))?.to_sql(ship_id).iter().for_each(|s| tests += &s );
+            tests += "\n\n";
+            println!("tests to_file end");
+            std::fs::write(
+                format!("../{ship_name}/test/data.sql"),
+                tests,
+            )
+            .expect("Unable to write file /test/data.sql");
         } else {
             return Err(Error::FromString(
                 "Parser write_to_file error: no general".to_owned(),

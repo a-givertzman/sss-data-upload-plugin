@@ -21,7 +21,7 @@ impl GrainBulkheads {
     fn to_string(&self, ship_id: usize) -> String {
         let mut result = String::new();
         self.parsed.iter().for_each(|(bulkhead_name, bulkhead_place_code)| {
-            result += &format!("UPDATE bulkhead_place SET bulkhead_id=(SELECT id FROM bulkhead WHERE name_engl='{bulkhead_name}') WHERE ship_id={ship_id} AND code='{bulkhead_place_code}');\n");
+            result += &format!("UPDATE bulkhead_place SET bulkhead_id=(SELECT id FROM bulkhead WHERE name_engl='{bulkhead_name}') WHERE ship_id={ship_id} AND code='{bulkhead_place_code}';\n");
         });
         result
     }

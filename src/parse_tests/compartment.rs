@@ -22,7 +22,7 @@ impl Compartment {
     fn to_string(&self, ship_id: usize) -> String {
         let mut result = String::new();
         self.parsed.iter().for_each(|(space_id, density, mass)| {
-            result += &format!(" UPDATE compartment SET density={density}, mass={mass} WHERE ship_id={ship_id} AND space_id={space_id};\n");
+            result += &format!("UPDATE compartment SET density={density}, mass={mass} WHERE ship_id={ship_id} AND space_id={space_id};\n");
         });
         result
     }

@@ -25,7 +25,7 @@ impl DraftMark {
         let mut result = format!("DELETE FROM draft_mark WHERE ship_id={ship_id};\n\n");
         result += &format!("INSERT INTO draft_mark\n  (ship_id, mark_id, name, x, y, z)\nVALUES\n");
         self.parsed.iter().for_each(|(mark_id, name, x, y, z)| {
-            result += &format!("  ({ship_id}, {mark_id}, {name}, {x}, {y}, {z}),\n");
+            result += &format!("  ({ship_id}, {mark_id}, '{name}', {x}, {y}, {z}),\n");
         });
         result.pop();
         result.pop();
