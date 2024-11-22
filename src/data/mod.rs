@@ -21,6 +21,7 @@ mod hold_part;
 mod hold_group;
 mod hold_curve;
 mod draft_mark;
+mod load_line;
 
 pub use ship_general::*;
 pub use table::*;
@@ -45,3 +46,4 @@ pub use hold_part::*;
 pub use hold_group::*;
 pub use hold_curve::*;
 pub use draft_mark::*;
+pub use load_line::*;

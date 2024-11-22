@@ -18,6 +18,7 @@ use crate::HoldPart;
 use crate::HorizontalSurf;
 use crate::HydrostaticCurves;
 use crate::LoadConstant;
+use crate::LoadLine;
 use crate::MinMetacentricHeightSubdivision;
 use crate::Pantocaren;
 use crate::PhysicalFrame;
@@ -177,6 +178,7 @@ impl Parser {
                         "bulkhead" => Box::new(Bulkhead::new(body)),
                         "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
                         "draft_mark" => Box::new(DraftMark::new(body)),
+                        "load_line" => Box::new(LoadLine::new(body)),
                         "general" => continue,
                         "physical_frame" => continue,
                         "compartment" => continue,
