@@ -30,7 +30,7 @@ impl BonjeanFrame {
         });
         result.pop();
         result.pop();
-        result.push(';');
+        result.push_str(";\n\n");
         result
     }
     //
@@ -44,7 +44,7 @@ impl BonjeanFrame {
             } );  
             result.pop();
             result.pop();
-            result.push(';');     
+            result.push_str(";\n\n");     
         });
         result
     }
@@ -57,21 +57,24 @@ impl Table for BonjeanFrame {
      //   dbg!(&self.data);
         let mut data = crate::split_data(&self.data)?;
         let delta = data.remove(0).pop().ok_or(Error::FromString(format!("BonjeanFrame parse delta error")))?.parse::<f64>()?;
+        if delta <= 0. {
+            return Err(Error::FromString(format!("BonjeanFrame parse delta error: delta:{}", delta)));
+        }
         let mut draft = data.remove(0);
         draft.remove(0);
         self.draft = draft.into_iter().filter_map(|s| s.parse::<f64>().ok() ).collect::<Vec<f64>>();
         data.remove(0);
         for mut row in data.into_iter() {
        //     dbg!(&row);
-            self.pos_x.push(row.remove(0).parse::<f64>()?*delta);
+            self.pos_x.push(row.remove(0).parse::<f64>()?*delta + 59.837);
             if self.draft.len() != row.len() {
                 return Err(Error::FromString(format!("BonjeanFrame parse error, draft.len() {} != row.len() {}", self.draft.len(), row.len())));
             }
-            let mut row_values = Vec::new();
+            let mut area = Vec::new();
             for value in row {
-                row_values.push(value.parse::<f64>()?);
+                area.push(value.parse::<f64>()?/delta);
             }
-            self.area.push(row_values);
+            self.area.push(area);
         }
     //    dbg!(&self.pos_x);
     //    dbg!(&self.draft);
@@ -83,7 +86,7 @@ impl Table for BonjeanFrame {
     fn to_file(&self, id: usize, name: &str) {
         fs::write(format!("../{name}/frames/bonjean_frame.sql"), self.bonjean_frame(id)).expect("Unable to write file bonjean_frame.sql"); 
         std::thread::sleep(std::time::Duration::from_secs(1));     
-        fs::write(format!("../{name}/hidrostatic/frame_area.sql"), self.frame_area(id)).expect("Unable to write file frame_area.sql");    
+        fs::write(format!("../{name}/frames/frame_area.sql"), self.frame_area(id)).expect("Unable to write file frame_area.sql");    
         std::thread::sleep(std::time::Duration::from_secs(1));      
     }
     //

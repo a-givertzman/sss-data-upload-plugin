@@ -96,7 +96,7 @@ impl Table for General {
             .collect();
         self.parameters = data
             .iter()
-            .filter_map(|v| match (v[0].clone(), v[2].parse::<f64>()) {
+            .filter_map(|v| match (v[0].clone(), v[2].replace(",", ".").parse::<f64>()) {
                 (name, Ok(value)) => Some((name, value, v[1].to_owned())),
                 _ => None,
             })
