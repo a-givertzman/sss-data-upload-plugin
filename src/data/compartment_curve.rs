@@ -57,7 +57,8 @@ impl Table for CompartmentCurve {
                 .collect();
 
                 //replace zero in buoyancy
-                if let Some((index, non_zero_line)) = data.iter().enumerate().filter(|(_, v)| v.2 != 0. && v.3 != 0. && v.4 != 0. ).next().map(|(i, v)| (i, (v.2, v.3, v.4))) {
+                if let Some((index, non_zero_line)) = data.iter().enumerate().filter(|(_, v)| v.2 != 0. || v.3 != 0. || v.4 != 0. ).next().map(|(i, v)| (i, (v.2, v.3, v.4))) {
+                //    dbg!(name, index, non_zero_line);
                         (0..index).for_each(|i| {
                         data[i].2 = non_zero_line.0;
                         data[i].3 = non_zero_line.1;
