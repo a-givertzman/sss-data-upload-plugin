@@ -47,8 +47,8 @@ impl Table for CompartmentCurve {
                             line[2].to_owned(), // buoyancy_x
                             line[3].to_owned(), // buoyancy_y
                             line[4].to_owned(), // buoyancy_z
-                            line[5].to_owned(), // long_inertia_moment_self
-                            line[6].to_owned(), // trans_inertia_moment_self
+                            line[6].to_owned(), // long_inertia_moment_self (y)
+                            line[5].to_owned(), // trans_inertia_moment_self (x)
                         ))
                     } else {
                         None
