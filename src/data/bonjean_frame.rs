@@ -66,7 +66,7 @@ impl Table for BonjeanFrame {
         data.remove(0);
         for mut row in data.into_iter() {
        //     dbg!(&row);
-            self.pos_x.push(row.remove(0).parse::<f64>()?*delta + 59.837);
+            self.pos_x.push(row.remove(0).parse::<f64>()?*delta);
             if self.draft.len() != row.len() {
                 return Err(Error::FromString(format!("BonjeanFrame parse error, draft.len() {} != row.len() {}", self.draft.len(), row.len())));
             }
