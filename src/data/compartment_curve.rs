@@ -42,20 +42,19 @@ impl Table for CompartmentCurve {
                 .filter_map(|line| {
                     if line.len() >= 7 {
                         Some((
-                            line[0].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // level
-                            line[1].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // volume
-                            line[2].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_x
-                            line[3].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_y
-                            line[4].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_z
-                            line[6].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // long_inertia_moment_self (y)
-                            line[5].to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // trans_inertia_moment_self (x)
+                            line[0].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // level
+                            line[1].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // volume
+                            line[2].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_x
+                            line[3].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_y
+                            line[4].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // buoyancy_z
+                            line[6].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // long_inertia_moment_self (y)
+                            line[5].trim().to_owned().parse::<f64>().expect(&format!("CompartmentCurve parse error: name:{name} line:{:?}", line)), // trans_inertia_moment_self (x)
                         ))
                     } else {
                         None
                     }
                 })
                 .collect();
-
                 //replace zero in buoyancy
                 if let Some((index, non_zero_line)) = data.iter().enumerate().filter(|(_, v)| v.2 != 0. || v.3 != 0. || v.4 != 0. ).next().map(|(i, v)| (i, (v.2, v.3, v.4))) {
                 //    dbg!(name, index, non_zero_line);
@@ -64,8 +63,13 @@ impl Table for CompartmentCurve {
                         data[i].3 = non_zero_line.1;
                         data[i].4 = non_zero_line.2;
                     });
+                }               
+                // check values 
+                if let Some(i) = (1..data.len()-1).filter(|&i| data[i].0 <= data[i-1].0 && data[i].1 < data[i-1].1 && data[i].4 < data[i-1].4 ).next() {
+                    let error = format!("CompartmentCurve parse error: wrong values: {:?}", data[i]);
+                    println!("{error}");
+                    return Err(Error::FromString(error));
                 }
-
                 self.parsed.push((name.clone(), data));
             //  dbg!(&self.parsed);
         }

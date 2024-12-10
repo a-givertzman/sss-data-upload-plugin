@@ -7,7 +7,7 @@ pub struct HoldCurve {
     data: Vec<(String, String)>,
     parsed: Vec<(
         String,
-        Vec<(String, String, String, String, String, String)>,
+        Vec<(f64, f64, f64, f64, f64, f64)>,
     )>,
 }
 //
@@ -24,7 +24,7 @@ impl HoldCurve {
         &self,
         ship_id: usize,
         code: String,
-        parsed_data: Vec<(String, String, String, String, String, String)>,
+        parsed_data: Vec<(f64, f64, f64, f64, f64, f64)>,
     ) -> String {
         let mut result: String = format!("DELETE FROM compartment_curve WHERE space_id IN (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id});\n\n");
         result += &format!("INSERT INTO compartment_curve\n  (ship_id, space_id, level, volume, buoyancy_x, buoyancy_y, buoyancy_z)\n");
@@ -42,7 +42,7 @@ impl HoldCurve {
         &self,
         ship_id: usize,
         code: String,
-        parsed_data: Vec<(String, String, String, String, String, String)>,
+        parsed_data: Vec<(f64, f64, f64, f64, f64, f64)>,
     ) -> String {
         let mut result: String = format!("DELETE FROM grain_moment WHERE space_id IN (SELECT space_id FROM hold_part WHERE code='{code}' AND ship_id={ship_id});\n\n");
         result += &format!("INSERT INTO grain_moment\n  (ship_id, space_id, level, moment)\n");
@@ -63,21 +63,26 @@ impl Table for HoldCurve {
         for (code, data) in self.data.iter() {
             let mut data = crate::split_data(data)?;
             data.remove(0);
-            let data = data
+            let data: Vec<_> = data
                 .into_iter()
                 .filter(|line| line[0].to_owned().parse::<f64>().is_ok())
                 .map(|line| {
                     (
-                        line[0].to_owned(), // Depth of cargo [m]
-                        line[1].to_owned(), // Volume [m3]
-                        line[2].to_owned(), // LCG  [m]
-                        line[3].to_owned(), // TCG  [m]
-                        line[4].to_owned(), // VCG  [m]
-                        line[5].to_owned(), // Transvers Grain Moments [m4]
+                        line[0].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Depth of cargo [m]
+                        line[1].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Volume [m3]
+                        line[2].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // LCG  [m]
+                        line[3].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // TCG  [m]
+                        line[4].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // VCG  [m]
+                        line[5].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Transvers Grain Moments [m4]
                     )
                 })
                 .collect();
-
+            // check values 
+            if let Some(i) = (1..data.len()-1).filter(|&i| data[i].0 <= data[i-1].0 && data[i].1 < data[i-1].1 && data[i].4 < data[i-1].4 ).next() {
+                let error = format!("HoldCurve parse error: wrong values: {:?}", data[i]);
+                println!("{error}");
+                return Err(Error::FromString(error));
+            }
             self.parsed.push((code.clone(), data));
             //  dbg!(&self.parsed);
         }
