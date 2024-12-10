@@ -43,13 +43,13 @@ impl Table for LoadConstant {
         println!("LoadConstant parse begin");
         //    dbg!(&self.data);
         let mut data = crate::split_data(&self.data)?;
-        data.remove(0);
+        let is_fr = data.remove(0).first().map_or("", |v| v).contains("Fr");
         for row in data {
         //   dbg!(&row);
-            let fr_min = row.get(0).ok_or(Error::FromString(
+            let x1 = row.get(0).ok_or(Error::FromString(
                 "LoadConstant error: no fr_min in row".to_owned(),
             ))?;
-            let fr_max = row.get(1).ok_or(Error::FromString(
+            let x2 = row.get(1).ok_or(Error::FromString(
                 "LoadConstant error: no fr_max in row".to_owned(),
             ))?;
             let mass = row
@@ -58,13 +58,19 @@ impl Table for LoadConstant {
                     "LoadConstant error: no mass in row".to_owned(),
                 ))?
                 .parse::<f64>()?;
-            let bound_min_x = self.physical_frame.value(fr_min)?;
-            let bound_max_x = self.physical_frame.value(fr_max)?;
-            self.parsed.push((
-                mass.to_string(),
-                bound_min_x.to_string(),
-                bound_max_x.to_string(),
-            ));
+            if is_fr {
+                self.parsed.push((
+                    mass.to_string(),
+                    self.physical_frame.value(x2)?.to_string(),
+                    self.physical_frame.value(x2)?.to_string(),
+                ));
+            } else {
+                self.parsed.push((
+                    mass.to_string(),
+                    x1.to_string(),
+                    x2.to_string(),
+                ));
+            };
         }
         //  dbg!(&self.parsed);
         println!("LoadConstant parse ok");
