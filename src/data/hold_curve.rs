@@ -1,10 +1,12 @@
 //! Структура с данными для compartment_curve для частей трюмов
+use calamine::{Data, DataType, Range};
+
 use crate::error::Error;
 use crate::Table;
 
 /// Структура с данными для compartment_curve для частей трюмов
 pub struct HoldCurve {
-    data: Vec<(String, String)>,
+    data: Vec<(String, Range<Data>)>,
     parsed: Vec<(
         String,
         Vec<(f64, f64, f64, f64, f64, f64)>,
@@ -13,7 +15,7 @@ pub struct HoldCurve {
 //
 impl HoldCurve {
     //
-    pub fn new(data: Vec<(String, String)>) -> Self {
+    pub fn new(data: Vec<(String, Range<Data>)>) -> Self {
         Self {
             data,
             parsed: Vec::new(),
@@ -61,29 +63,72 @@ impl Table for HoldCurve {
     fn parse(&mut self) -> Result<(), Error> {
         println!("HoldCurve parse begin");
         for (code, data) in self.data.iter() {
-            let mut data = crate::split_data(data)?;
+            let code = code.clone();
+            let code = if !code.contains("(") && !code.contains(")") {
+                code
+            } else {
+                code
+                .split("(")
+                .collect::<Vec<_>>()
+                .last()
+                .copied()
+                .ok_or(format!("HoldCurve parse code error: no ( code:{}", code))?
+                .split(")")
+                .collect::<Vec<_>>()
+                .first()
+                .copied()
+                .ok_or(format!("HoldCurve parse code error: no ) code:{}", code))?.to_owned()
+            };
+            let mut data: Vec<&[Data]> = data.rows().filter(|v| !v.is_empty()).collect();
             data.remove(0);
-            let data: Vec<_> = data
-                .into_iter()
-                .filter(|line| line[0].to_owned().parse::<f64>().is_ok())
-                .map(|line| {
-                    (
-                        line[0].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Depth of cargo [m]
-                        line[1].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Volume [m3]
-                        line[2].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // LCG  [m]
-                        line[3].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // TCG  [m]
-                        line[4].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // VCG  [m]
-                        line[5].trim().to_owned().parse::<f64>().expect(&format!("HoldCurve parse error: code:{code} line:{:?}", line)), // Transvers Grain Moments [m4]
-                    )
-                })
-                .collect();
+            let mut parsed_data = Vec::new();
+            let parse = |line: &[Data], i: usize| -> Result<f64, Error> {
+                line.get(i)
+                    .ok_or(format!(
+                        "HoldCurve parse data error:  code:{code} line:{:?}",
+                        line
+                    ))?
+                    .as_f64()
+                    .ok_or(format!("HoldCurve parse data error:  code:{code} line:{:?}", line).into())
+            };
+            for line in data {
+                if line.len() < 6 {
+                    dbg!(code, line);
+                    panic!("HoldCurve line.len() < 6");
+                }
+                let line = (
+                    parse(line, 0)?,
+                    parse(line, 1)?,
+                    parse(line, 2)?,
+                    parse(line, 3)?,
+                    parse(line, 4)?,
+                    parse(line, 5)?,
+                );
+                parsed_data.push(line);
+            }
+            //replace zero in buoyancy
+            if let Some((index, non_zero_line)) = parsed_data
+                .iter()
+                .enumerate()
+                .filter(|(_, v)| v.2 != 0. || v.3 != 0. || v.4 != 0.)
+                .next()
+                .map(|(i, v)| (i, (v.2, v.3, v.4)))
+            {
+                //    dbg!(name, index, non_zero_line);
+                (0..index).for_each(|i| {
+                    parsed_data[i].2 = non_zero_line.0;
+                    parsed_data[i].3 = non_zero_line.1;
+                    parsed_data[i].4 = non_zero_line.2;
+                });
+            }            
             // check values 
-            if let Some(i) = (1..data.len()-1).filter(|&i| data[i].0 <= data[i-1].0 && data[i].1 < data[i-1].1 && data[i].4 < data[i-1].4 ).next() {
-                let error = format!("HoldCurve parse error: wrong values: {:?}", data[i]);
+            if let Some(i) = (1..parsed_data.len()-1).filter(|&i| parsed_data[i].0 <= parsed_data[i-1].0 && parsed_data[i].1 < parsed_data[i-1].1 && parsed_data[i].4 < parsed_data[i-1].4 ).next() {
+                let error = format!("HoldCurve parse error: wrong values: {:?}", parsed_data[i]);
                 println!("{error}");
                 return Err(Error::FromString(error));
             }
-            self.parsed.push((code.clone(), data));
+
+            self.parsed.push((code.to_string(), parsed_data));
             //  dbg!(&self.parsed);
         }
         println!("HoldCurve parse ok");

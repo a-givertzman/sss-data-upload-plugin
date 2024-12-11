@@ -58,7 +58,7 @@ impl Parser {
         }
     }
     /// Конвертация и проверка данных
-    pub fn convert_data(&mut self) -> Result<(), Error> {
+    pub fn convert_data(&mut self, path: &str) -> Result<(), Error> {
         println!("Parser convert begin");
         let json_data: serde_json::Value = serde_json::from_str(&self.data)?;
         //  println!("Data: {}", json_data);
@@ -69,26 +69,6 @@ impl Parser {
         let fields = fields
             .as_array()
             .ok_or(Error::FromString(format!("fields no array!")))?;
-        let compartment_curve_data: Vec<_> = fields
-        .iter()
-        .filter(|f| f.get("tag").unwrap().as_str().unwrap() == "compartment_curve")
-        .map(|f| {
-            (
-                f.get("name").unwrap().as_str().unwrap().to_string(),
-                f.get("body").unwrap().as_str().unwrap().to_string(),
-            )
-        })
-        .collect();
-        let hold_curve_data: Vec<_> = fields
-        .iter()
-        .filter(|f| f.get("tag").unwrap().as_str().unwrap() == "hold_curve")
-        .map(|f| {
-            (
-                f.get("code").unwrap().as_str().unwrap().to_string(),
-                f.get("body").unwrap().as_str().unwrap().to_string(),
-            )
-        })
-        .collect();
         let fields: HashMap<String, String> = fields
             .iter()
             .map(|f| {
@@ -130,10 +110,6 @@ impl Parser {
         compartment.parse()?;
         self.parsed_data.insert("compartment".to_owned(), compartment);
 
-        let mut compartment_curve = Box::new(CompartmentCurve::new(compartment_curve_data));
-        compartment_curve.parse()?;
-        self.parsed_data.insert("compartment_curve".to_owned(), compartment_curve);
-
         let mut hold_group = Box::new(HoldGroup::new(fields.get("hold_group").ok_or(
             Error::FromString(format!("Parser convert error: no hold_group!")),
         )?.to_string()));
@@ -145,10 +121,6 @@ impl Parser {
         )?.to_string()));
         hold_part.parse()?;
         self.parsed_data.insert("hold_part".to_owned(), hold_part);
-
-        let mut hold_curve = Box::new(HoldCurve::new(hold_curve_data));
-        hold_curve.parse()?;
-        self.parsed_data.insert("hold_curve".to_owned(), hold_curve);
 
         for (tag, body) in fields {
             match tag.as_str()  {
@@ -193,6 +165,18 @@ impl Parser {
                 }
             }
         }
+        let mut compartment_curve_data: Xlsx<_> = open_workbook(path.to_owned() + "Tank_curve.xlsx").expect("Cannot open file");
+        let compartment_curve_data: Vec<(String, Range<Data>)> = compartment_curve_data.worksheets().into_iter().filter(|(_, range)| range.used_cells().count() > 0 ).collect();        
+        let mut compartment_curve = Box::new(CompartmentCurve::new(compartment_curve_data));
+        compartment_curve.parse()?;
+        self.parsed_data.insert("compartment_curve".to_owned(), compartment_curve);
+
+        let mut hold_curve_data: Xlsx<_> = open_workbook(path.to_owned() + "Holds_curve.xlsx").expect("Cannot open file");
+        let hold_curve_data: Vec<(String, Range<Data>)> = hold_curve_data.worksheets().into_iter().filter(|(_, range)| range.used_cells().count() > 0 ).collect();
+        let mut hold_curve = Box::new(HoldCurve::new(hold_curve_data));
+        hold_curve.parse()?;
+        self.parsed_data.insert("hold_curve".to_owned(), hold_curve);
+
         println!("Parser convert end");
         Ok(())
     }
