@@ -1,7 +1,7 @@
 mod ship_general;
 mod table;
 mod frames_physical;
-mod frames_theoretical;
+//mod frames_theoretical;
 mod bonjean_frame;
 mod strength_force_limit;
 mod hydrostatic_curves;
@@ -26,7 +26,7 @@ mod load_line;
 pub use ship_general::*;
 pub use table::*;
 pub use frames_physical::*;
-pub use frames_theoretical::*;
+//pub use frames_theoretical::*;
 pub use bonjean_frame::*;
 pub use strength_force_limit::*;
 pub use hydrostatic_curves::*;

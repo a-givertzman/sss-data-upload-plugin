@@ -21,7 +21,7 @@ pub trait Table {
     //
     fn to_sql(&self, id: usize) -> Vec<String>;
     //
-    fn to_file(&self, id: usize, name: &str) {}
+    fn to_file(&self, id: usize, name: &str);
     //
     fn data_to_sql(&self, data: &Vec<(f64, f64)>, table_name: &str, ship_id: usize) -> Vec<String> {
         let mut result = Vec::new();

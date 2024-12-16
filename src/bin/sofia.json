@@ -597,6 +597,18 @@
             "type": "csv",
             "tag": "load_line",
             "body": "ID;Name;X;Y;Z;D;\r\n102;Осадка по летнюю ГВЛ ЛБ;Summer LL draft PS;65,25;-7,935;8,012;-;\r\n101;Осадка по летнюю ГВЛ ПрБ;Summer LL draft SB;65,25;7,935;8,012;-;\r\n110;Осадка по летнюю ГВЛ в пресной воде ЛБ;Fresh water LL draft in summer PS;65,675;-7,935;8,189;-;\r\n109;Осадка по летнюю ГВЛ в пресной воде ПрБ;Fresh water LL draft in summer SB;65,675;7,935;8,189;-;\r\n108;Осадка по тропическую ГВЛ ЛБ;Tropical LL draft PS;65,905;-7,935;8,178;-;\r\n107;Осадка по тропическую ГВЛ ПрБ;Tropical LL draft SB;65,905;7,935;8,178;-;\r\n112;Осадка по тропическую ГВЛ в пресной воде ЛБ;Tropical fresh water LL draft PS;65,675;-7,935;8,354;-;\r\n111;Осадка по тропическую ГВЛ в пресной воде ПрБ;Tropical fresh water LL draft SB;65,675;7,935;8,354;-;\r\n104;Осадка по зимнюю ГВЛ ЛБ;Winter LL draft PS;65,905;-7,935;7,846;-;\r\n103;Осадка по зимнюю ГВЛ ПрБ;Winter LL draft SB;65,905;7,935;7,846;-;\r\n106;Осадка по зимнюю ГВЛ в Северной Атлантике ЛБ;Winter North Atlantic LL draft PS;65,905;-7,935;7,796;-;\r\n105;Осадка по зимнюю ГВЛ в Северной Атлантике ПрБ;Winter North Atlantic LL draft SB;65,905;7,935;7,796;-;\r\n145;Заглубление винта ДП;Screw immersion CL;1,8;0;2,2;4,2;\r\n143;Высота на носовом перпендикуляре ПрБ;Depth at forward perpendicular SB;130,500;4,555;12,630;-;\r\n144;Высота на носовом перпендикуляре ЛБ;Depth at forward perpendicular PS;130,500;-4,555;12,630;-;\r\n"
+        },
+        {
+            "id": "90",
+            "type": "csv",
+            "tag": "strength_limits_sea",
+            "body": "Fr;Bending moment min [kN∙m];Bending moment max [kN∙m];Shear force min [kN];Shear force max [kN];\r\n28;-110 507;86 516;-12 418;12 418;\r\n56;-226 258;250 572;-28 400;28 400;\r\n117;-226 258;250 572;-28 400;28 400;\r\n156;-37 507;62 855;-11 000;11 000;\r\n"
+        },
+        {
+            "id": "91",
+            "type": "csv",
+            "tag": "strength_limits_harbor",
+            "body": "Fr;Bending moment min [kN∙m];Bending moment max [kN∙m];Shear force min [kN];Shear force max [kN];\r\n28;-198 400;198 400;-12 418;12 418;\r\n56;-314 170;314 170;-28 400;28 400;\r\n117;-314 170;314 170;-28 400;28 400;\r\n156;-90 000;90 000;-11 000;11 000;\r\n"
         }
     ]
 }
