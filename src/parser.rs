@@ -3,7 +3,6 @@ use crate::error::Error;
 use crate::parse_tests;
 use crate::parse_tests::BulkCargo;
 use crate::parse_tests::ShipGeneral;
-use crate::Angle;
 use crate::ApiServer;
 use crate::BonjeanFrame;
 use crate::Bulkhead;
@@ -11,6 +10,8 @@ use crate::BulkheadPlace;
 use crate::Compartment;
 use crate::CompartmentCurve;
 use crate::DraftMark;
+use crate::EntryAngle;
+use crate::FloodAngle;
 use crate::General;
 use crate::HoldCurve;
 use crate::HoldGroup;
@@ -167,9 +168,9 @@ impl Parser {
                                 format!("Parser LoadConstant error: physical_frame"),
                             ))?),
                         )),
-                        "hydrostatic_curves" => Box::new(HydrostaticCurves::new(body)),
-                        "pantocaren" => Box::new(Pantocaren::new(body)),
-                        "angle" => Box::new(Angle::new(body)),
+                        "hydrostatic_curves" => continue,//Box::new(HydrostaticCurves::new(body)),
+                        "pantocaren" => continue,//Box::new(Pantocaren::new(body)),
+                        "angle" => continue,//Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
                         "vertical_area_strength" => Box::new(VerticalAreaStrength::new(body)),
                         "horizontal_surf" => Box::new(HorizontalSurf::new(body)),
@@ -203,7 +204,7 @@ impl Parser {
             .filter(|(_, range)| range.used_cells().count() > 0)
             .collect();
         let mut compartment_curve = Box::new(CompartmentCurve::new(compartment_curve_data));
-        compartment_curve.parse()?;
+        compartment_curve.parse()?;        
         self.parsed_data
             .insert("compartment_curve".to_owned(), compartment_curve);
 
@@ -218,6 +219,34 @@ impl Parser {
         hold_curve.parse()?;
         self.parsed_data.insert("hold_curve".to_owned(), hold_curve);
 
+        let mut hydrostatic_data: Xlsx<_> =
+            open_workbook(path.to_owned() + "Pantokarens_Angle_HydrostaticCurves.xlsx").expect("Cannot open file");
+        let hydrostatic_data: Vec<(String, Range<Data>)> = hydrostatic_data
+            .worksheets()
+            .into_iter()
+            .filter(|(_, range)| range.used_cells().count() > 0)
+            .collect();
+        for (tag, data) in hydrostatic_data {
+            let data: Vec<&[Data]> = data.rows().filter(|v| !v.is_empty()).collect();
+            dbg!(&tag, data.len());
+            let data: Vec<Vec<String>> = data
+                .iter()
+                .map(|v| v.iter().map(|v| v.to_string()).collect::<Vec<String>>())
+                .collect();
+            match tag.to_lowercase().as_str() {
+                text => {
+                    let mut table: Box<dyn Table> = match text {
+                        "angle" => Box::new(FloodAngle::new(data)),
+                        "deckangle" => Box::new(EntryAngle::new(data)),
+                        "hydrostaticcurves" => Box::new(HydrostaticCurves::new(data)),
+                        "pantokarens" => Box::new(Pantocaren::new(data)),
+                        _ => Err(Error::FromString(format!("Unknown tag in hydrostatic_data: {text}")))?,
+                    };
+                    table.parse()?;
+                    self.parsed_tests.insert(text.to_owned(), table);
+                }
+            }
+        }
         println!("Parser convert end");
         Ok(())
     }

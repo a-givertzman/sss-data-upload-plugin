@@ -4,14 +4,14 @@ use crate::Table;
 
 /// Структура с данными для bonjean_frame
 pub struct Pantocaren {
-    data: String,
+    data: Vec<Vec<String>>,
     /// Trim, m | T, м  | entry angle, deg | flooding angle, deg
     parsed: Vec<(f64, f64, f64, f64)>,
 }
 //
 impl Pantocaren {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>) -> Self {
         Self {
             data,
             parsed: Vec::new(),
@@ -38,11 +38,10 @@ impl Table for Pantocaren {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("Pantocaren parse begin");
-    //    dbg!(&self.data);
-        let mut data = crate::split_data(&self.data)?;
-    //    dbg!(&data);
+        let mut data = self.data.clone();
+      //  dbg!(&data);
         let roll = data.remove(0);
-    //    dbg!(&roll);
+     //   dbg!(&roll);
         data.remove(0);
         for row in data.into_iter() {
             let trim = row.get(0).ok_or(Error::FromString(

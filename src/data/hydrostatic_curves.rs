@@ -6,7 +6,7 @@ use std::thread::sleep;
 
 /// Структура с данными для bonjean_frame
 pub struct HydrostaticCurves {
-    data: String,
+    data: Vec<Vec<String>>,
     /// Средняя осадка, зависимость от объемного водоизмещения,
     /// Trim, m | V, м3 | T, м  ship_id, key, value
     mean_draught: Vec<(f64, f64, f64)>,
@@ -33,7 +33,7 @@ pub struct HydrostaticCurves {
 ///
 impl HydrostaticCurves {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>) -> Self {
         Self {
             data,
             mean_draught: Vec::new(),
@@ -103,7 +103,7 @@ impl Table for HydrostaticCurves {
     fn parse(&mut self) -> Result<(), Error> {
         println!("HydrostaticCurves parse begin");
         //    dbg!(&self.data);
-        let data = crate::split_data(&self.data)?;
+        let data = self.data.clone();
         let mut data: Vec<(usize, Vec<String>)> = data.into_iter().enumerate().collect();
         data.remove(0);
         let mut parsed: Vec<(usize, Vec<f64>)> = Vec::new();
