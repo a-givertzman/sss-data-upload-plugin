@@ -228,7 +228,6 @@ impl Parser {
             .collect();
         for (tag, data) in hydrostatic_data {
             let data: Vec<&[Data]> = data.rows().filter(|v| !v.is_empty()).collect();
-            dbg!(&tag, data.len());
             let data: Vec<Vec<String>> = data
                 .iter()
                 .map(|v| v.iter().map(|v| v.to_string()).collect::<Vec<String>>())
@@ -243,7 +242,7 @@ impl Parser {
                         _ => Err(Error::FromString(format!("Unknown tag in hydrostatic_data: {text}")))?,
                     };
                     table.parse()?;
-                    self.parsed_tests.insert(text.to_owned(), table);
+                    self.parsed_data.insert(text.to_owned(), table);
                 }
             }
         }
