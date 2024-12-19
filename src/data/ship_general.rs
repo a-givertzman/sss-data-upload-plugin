@@ -8,7 +8,7 @@ use crate::{ApiServer, Table};
 
 /// Структура с данными для ship_name и ship_parameters
 pub struct General {
-    data: String,
+    data: Vec<Vec<String>>,
     parameters: Vec<(String, f64, String)>,
     map: HashMap<String, String>,
     api_server: Rc<RefCell<ApiServer>>,
@@ -16,7 +16,7 @@ pub struct General {
 //
 impl General {
     //
-    pub fn new(data: String, api_server: Rc<RefCell<ApiServer>>) -> Self {
+    pub fn new(data: Vec<Vec<String>>, api_server: Rc<RefCell<ApiServer>>) -> Self {
         Self {
             data,
             parameters: Vec::new(),
@@ -87,19 +87,15 @@ impl General {
 impl Table for General {
     //
     fn parse(&mut self) -> Result<(), Error> {
-        let data: Vec<Vec<String>> = self
-            .data
-            .split("\r\n")
-            .map(|line| line.split(';').map(|s| s.to_owned()).collect()).collect();
-        let data: Vec<Vec<String>> = data.into_iter()
-            .filter(|s| s.len() >= 3 )
-            .collect();
+        let data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 3).collect();
         self.parameters = data
             .iter()
-            .filter_map(|v| match (v[0].clone(), v[2].replace(",", ".").parse::<f64>()) {
-                (name, Ok(value)) => Some((name, value, v[1].to_owned())),
-                _ => None,
-            })
+            .filter_map(
+                |v| match (v[0].clone(), v[2].replace(",", ".").parse::<f64>()) {
+                    (name, Ok(value)) => Some((name, value, v[1].to_owned())),
+                    _ => None,
+                },
+            )
             .collect();
         self.map = data
             .iter()

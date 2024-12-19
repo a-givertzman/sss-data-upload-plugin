@@ -79,29 +79,22 @@ impl Parser {
                 )
             })
             .collect();
+        {
+            let data = Self::get_hash_map(path, "General.xlsx");
+            let general_data = data.get("general").ok_or(Error::FromString(format!(
+                "Parser convert error: no general!"
+            )))?;
+            let mut general = General::new(general_data.to_owned(), Rc::clone(&self.api_server));
+            general.parse()?;
+            self.general = Some(general);
 
-        let mut general = General::new(
-            fields
-                .get("general")
-                .ok_or(Error::FromString(format!(
-                    "Parser convert error: no general!"
-                )))?
-                .to_string(),
-            Rc::clone(&self.api_server),
-        );
-        general.parse()?;
-        self.general = Some(general);
-
-        let mut physical_frame = PhysicalFrame::new(
-            fields
-                .get("physical_frame")
-                .ok_or(Error::FromString(format!(
-                    "Parser convert error: no physical_frame!"
-                )))?
-                .to_string(),
-        );
-        physical_frame.parse()?;
-        self.physical_frame = Some(Rc::new(physical_frame));
+            let physical_data = data.get("fr.th").ok_or(Error::FromString(format!(
+                "Parser convert error: no physical frame!"
+            )))?;
+            let mut physical_frame = PhysicalFrame::new(physical_data.to_owned());
+            physical_frame.parse()?;
+            self.physical_frame = Some(Rc::new(physical_frame));
+        }
 
         let mut compartment = Box::new(Compartment::new(
             fields
@@ -123,28 +116,36 @@ impl Parser {
         self.parsed_data
             .insert("compartment".to_owned(), compartment);
 
-        let mut hold_group = Box::new(HoldGroup::new(
-            fields
-                .get("hold_group")
-                .ok_or(Error::FromString(format!(
-                    "Parser convert error: no hold_group!"
-                )))?
-                .to_string(),
-        ));
-        hold_group.parse()?;
-        self.parsed_data.insert("hold_group".to_owned(), hold_group);
+        {
+            let data = Self::get_hash_map(path, "CargoData.xlsx");
+            let hold_group_data = data.get("general").ok_or(Error::FromString(format!(
+                "Parser convert error: no general!"
+            )))?;
+            let mut hold_group = Box::new(HoldGroup::new(
+                fields
+                    .get("hold_group")
+                    .ok_or(Error::FromString(format!(
+                        "Parser convert error: no hold_group!"
+                    )))?
+                    .to_string(),
+            ));
+            hold_group.parse()?;
+            self.parsed_data.insert("hold_group".to_owned(), hold_group);
 
-        let mut hold_part = Box::new(HoldPart::new(
-            fields
-                .get("hold_part")
-                .ok_or(Error::FromString(format!(
-                    "Parser convert error: no hold_part!"
-                )))?
-                .to_string(),
-        ));
-        hold_part.parse()?;
-        self.parsed_data.insert("hold_part".to_owned(), hold_part);
+            let mut hold_part = Box::new(HoldPart::new(
+                fields
+                    .get("hold_part")
+                    .ok_or(Error::FromString(format!(
+                        "Parser convert error: no hold_part!"
+                    )))?
+                    .to_string(),
+            ));
+            hold_part.parse()?;
+            self.parsed_data.insert("hold_part".to_owned(), hold_part);
 
+            "bulkhead" => Box::new(Bulkhead::new(body)),
+            "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
+        }
         for (tag, body) in fields {
             match tag.as_str() {
                 text => {
@@ -168,17 +169,17 @@ impl Parser {
                                 format!("Parser LoadConstant error: physical_frame"),
                             ))?),
                         )),
-                        "hydrostatic_curves" => continue,//Box::new(HydrostaticCurves::new(body)),
-                        "pantocaren" => continue,//Box::new(Pantocaren::new(body)),
-                        "angle" => continue,//Box::new(Angle::new(body)),
+                        "hydrostatic_curves" => continue, //Box::new(HydrostaticCurves::new(body)),
+                        "pantocaren" => continue,         //Box::new(Pantocaren::new(body)),
+                        "angle" => continue,              //Box::new(Angle::new(body)),
                         "windage" => Box::new(Windage::new(body)),
                         "vertical_area_strength" => Box::new(VerticalAreaStrength::new(body)),
                         "horizontal_surf" => Box::new(HorizontalSurf::new(body)),
                         "min_metacentric_height_subdivision" => {
                             Box::new(MinMetacentricHeightSubdivision::new(body))
                         }
-                        "bulkhead" => Box::new(Bulkhead::new(body)),
-                        "bulkhead_place" => Box::new(BulkheadPlace::new(body)),
+                        "bulkhead" => continue,         //Box::new(Bulkhead::new(body)),
+                        "bulkhead_place" => continue,   //Box::new(BulkheadPlace::new(body)),
                         "draft_mark" => Box::new(DraftMark::new(body)),
                         "load_line" => Box::new(LoadLine::new(body)),
                         "general" => continue,
@@ -188,7 +189,7 @@ impl Parser {
                         "hold_group" => continue,
                         "hold_part" => continue,
                         "hold_curve" => continue,
-                        "frames_theoretical" => continue,// Box::new(TheoreticalFrame::new(body)),
+                        "frames_theoretical" => continue, // Box::new(TheoreticalFrame::new(body)),
                         _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                     };
                     table.parse()?;
@@ -204,7 +205,7 @@ impl Parser {
             .filter(|(_, range)| range.used_cells().count() > 0)
             .collect();
         let mut compartment_curve = Box::new(CompartmentCurve::new(compartment_curve_data));
-        compartment_curve.parse()?;        
+        compartment_curve.parse()?;
         self.parsed_data
             .insert("compartment_curve".to_owned(), compartment_curve);
 
@@ -219,33 +220,21 @@ impl Parser {
         hold_curve.parse()?;
         self.parsed_data.insert("hold_curve".to_owned(), hold_curve);
 
-        let mut hydrostatic_data: Xlsx<_> =
-            open_workbook(path.to_owned() + "Pantokarens_Angle_HydrostaticCurves.xlsx").expect("Cannot open file");
-        let hydrostatic_data: Vec<(String, Range<Data>)> = hydrostatic_data
-            .worksheets()
-            .into_iter()
-            .filter(|(_, range)| range.used_cells().count() > 0)
-            .collect();
-        for (tag, data) in hydrostatic_data {
-            let data: Vec<&[Data]> = data.rows().filter(|v| !v.is_empty()).collect();
-            let data: Vec<Vec<String>> = data
-                .iter()
-                .map(|v| v.iter().map(|v| v.to_string()).collect::<Vec<String>>())
-                .collect();
-            match tag.to_lowercase().as_str() {
-                text => {
-                    let mut table: Box<dyn Table> = match text {
-                        "angle" => Box::new(FloodAngle::new(data)),
-                        "deckangle" => Box::new(EntryAngle::new(data)),
-                        "hydrostaticcurves" => Box::new(HydrostaticCurves::new(data)),
-                        "pantokarens" => Box::new(Pantocaren::new(data)),
-                        _ => Err(Error::FromString(format!("Unknown tag in hydrostatic_data: {text}")))?,
-                    };
-                    table.parse()?;
-                    self.parsed_data.insert(text.to_owned(), table);
-                }
-            }
+        let data = Self::get_hash_map(path, "Pantokarens_Angle_HydrostaticCurves.xlsx");
+        for (tag, data) in data {
+            let mut table: Box<dyn Table> = match tag.to_lowercase().as_str() {
+                "angle" => Box::new(FloodAngle::new(data)),
+                "deckangle" => Box::new(EntryAngle::new(data)),
+                "hydrostaticcurves" => Box::new(HydrostaticCurves::new(data)),
+                "pantokarens" => Box::new(Pantocaren::new(data)),
+                _ => Err(Error::FromString(format!(
+                    "Unknown tag in hydrostatic_data: {tag}"
+                )))?,
+            };
+            table.parse()?;
+            self.parsed_data.insert(tag.to_owned(), table);
         }
+
         println!("Parser convert end");
         Ok(())
     }
@@ -395,5 +384,23 @@ impl Parser {
         }
         println!("Parser write_to_file end");
         Ok(())
+    }
+    //
+    fn get_hash_map(path: &str, filename: &str) -> HashMap<String, Vec<Vec<String>>> {
+        let mut data: Xlsx<_> = open_workbook(path.to_owned() + filename)
+            .expect(&format!("Cannot open file {}", filename));
+        data.worksheets()
+            .into_iter()
+            .filter(|(_, range)| range.used_cells().count() > 0)
+            .map(|(tag, data)| {
+                (
+                    tag,
+                    data.rows()
+                        .filter(|v| !v.is_empty())
+                        .map(|v| v.iter().map(|v| v.to_string()).collect::<Vec<String>>())
+                        .collect::<Vec<Vec<String>>>(),
+                )
+            })
+            .collect::<HashMap<String, Vec<Vec<String>>>>()
     }
 }
