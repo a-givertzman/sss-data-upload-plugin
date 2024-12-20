@@ -6,14 +6,14 @@ use super::PhysicalFrame;
 
 /// Структура с данными для compartment
 pub struct Compartment {
-    data: String,
+    data: Vec<Vec<String>>,
     physical_frame: Rc<PhysicalFrame>,
     parsed: Vec<(String, String, String, String, String, String, String, String)>,
 }
 //
 impl Compartment {
     //
-    pub fn new(data: String, physical_frame: Rc<PhysicalFrame>) -> Self {
+    pub fn new(data: Vec<Vec<String>>, physical_frame: Rc<PhysicalFrame>) -> Self {
         Self {
             data,
             physical_frame,
@@ -40,7 +40,7 @@ impl Table for Compartment {
     fn parse(&mut self) -> Result<(), Error> {
         println!("Compartment parse begin");
         //    dbg!(&self.data);
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 8).collect();
         data.remove(0);
         for row in data {
         //   dbg!(&row);

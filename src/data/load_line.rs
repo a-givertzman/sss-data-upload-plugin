@@ -6,7 +6,7 @@ use std::thread::sleep;
 
 /// Структура с данными для load_line и screw
 pub struct LoadLine {
-    data: String,
+    data: Vec<Vec<String>>,
     /// Осадки
     /// id | name_rus | name_engl | X | Y | Z
     load_line: Vec<(String, String, String, String, String, String)>,
@@ -20,7 +20,7 @@ pub struct LoadLine {
 ///
 impl LoadLine {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             load_line: Vec::new(),
@@ -81,8 +81,8 @@ impl Table for LoadLine {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("LoadLine parse begin");
-        //    dbg!(&self.data);
-        let mut data = crate::split_data(&self.data)?;
+    //    dbg!(&self.data);
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 7).collect();
         data.remove(0);
         for row in data {
             if row.len() < 7 {

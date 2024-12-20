@@ -7,6 +7,7 @@ use crate::error::Error;
 use crate::{ApiServer, Table};
 
 /// Структура с данными для ship_name и ship_parameters
+#[derive(Clone)]
 pub struct General {
     data: Vec<Vec<String>>,
     parameters: Vec<(String, f64, String)>,

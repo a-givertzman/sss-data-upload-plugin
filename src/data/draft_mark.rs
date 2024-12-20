@@ -6,7 +6,7 @@ use std::thread::sleep;
 
 /// Структура с данными для draft_mark
 pub struct DraftMark {
-    data: String,
+    data: Vec<Vec<String>>,
     /// Координаты отметок заглубления на корпусе судна относительно центра, м
     /// Z | X | Y
     parsed: Vec<(String, String, String, String, String)>,
@@ -14,7 +14,7 @@ pub struct DraftMark {
 ///
 impl DraftMark {
     ///
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(),
@@ -40,7 +40,7 @@ impl Table for DraftMark {
     fn parse(&mut self) -> Result<(), Error> {
         println!("DraftMark parse begin");
         //    dbg!(&self.data);
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() > 0).collect();
         let mark_id: Vec<String> = data.remove(0).into_iter().filter(|s| s.len() > 0).collect();
         let names: Vec<String> = data.remove(0).into_iter().filter(|s| s.len() > 0).collect();
         data.remove(0);
