@@ -124,7 +124,6 @@ impl Parser {
                     .ok_or(Error::FromString(format!(
                         "Parser convert error: no CargoCompartmentsParts!"
                     )))?;
-                dbg!(data);
                 let mut table = Box::new(HoldPart::new(data.to_owned()));
                 table.parse()?;
                 self.parsed_data
