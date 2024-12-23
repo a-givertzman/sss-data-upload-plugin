@@ -4,14 +4,14 @@ use crate::Table;
 
 /// Структура с данными горизонтальных поверхностей
 pub struct HorizontalSurf {
-    data: String,
+    data: Vec<Vec<String>>,
     /// AREA [m2]	VCG [m]	LCG [m]	TCG [m]	X1 [m]	X2 [m]
     parsed: Vec<Vec<String>>,
 }
 //
 impl  HorizontalSurf {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(), 
@@ -51,7 +51,7 @@ impl Table for HorizontalSurf  {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("HorizontalSurf parse begin");
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 7).collect();
         data.remove(0);
         for row in data.into_iter() {  
             if row.len() != 7 {

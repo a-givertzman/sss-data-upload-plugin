@@ -5,7 +5,7 @@ use std::fs;
 
 /// Структура с данными для bonjean_frame
 pub struct BonjeanFrame {
-    data: String,
+    data: Vec<Vec<String>>,
     draft: Vec<f64>,
     pos_x: Vec<f64>,
     area: Vec<Vec<f64>>,
@@ -13,7 +13,7 @@ pub struct BonjeanFrame {
 //
 impl BonjeanFrame {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             draft: Vec::new(),
@@ -54,9 +54,10 @@ impl Table for BonjeanFrame {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("BonjeanFrame parse begin");
-     //   dbg!(&self.data);
-        let mut data = crate::split_data(&self.data)?;
-        let delta = data.remove(0).pop().ok_or(Error::FromString(format!("BonjeanFrame parse delta error")))?.parse::<f64>()?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 0).collect();
+        let binding = data.remove(0);
+        let delta = binding.get(1).ok_or(Error::FromString(format!("BonjeanFrame parse delta error")))?;
+        let delta = delta.parse::<f64>().map_err(|e| format!("BonjeanFrame parse error:{e} delta:{delta}"))?;
         if delta <= 0. {
             return Err(Error::FromString(format!("BonjeanFrame parse delta error: delta:{}", delta)));
         }

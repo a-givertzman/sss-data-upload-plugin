@@ -5,13 +5,13 @@ use crate::Table;
 
 // Структура с данными для min_metacentric_height_subdivision
 pub struct MinMetacentricHeightSubdivision {
-    data: String,
+    data: Vec<Vec<String>>,
     parsed: Vec<(String, String)>,
 }
 //
 impl MinMetacentricHeightSubdivision {
     //
-    pub fn new(data: String,) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(),
@@ -39,7 +39,7 @@ impl Table for MinMetacentricHeightSubdivision {
     fn parse(&mut self) -> Result<(), Error> {
      //   dbg!(&self.data);
         println!("MinMetacentricHeightSubdivision parse begin");
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 2).collect();
         data.remove(0);
         self.parsed = data
             .into_iter()

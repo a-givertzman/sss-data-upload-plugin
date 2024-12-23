@@ -4,14 +4,14 @@ use crate::Table;
 
 /// Структура с данными поверхности парусности
 pub struct Windage {
-    data: String,
+    data: Vec<Vec<String>>,
     /// d [m], Z cl sub [m], Lwl [m], Bwl [m], Av CS [m2], X  Av CS [m], Mvx CS [m3], Z Av CS [m], Mvz CS  [m3], A bow 0,15L [m2]
     parsed: Vec<Vec<f64>>,
 }
 //
 impl  Windage {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(), 
@@ -63,7 +63,7 @@ impl Table for Windage  {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("Windage parse begin");
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 10).collect();
         data.remove(0);
         for row in data.into_iter() {  
             if row.len() != 10 {

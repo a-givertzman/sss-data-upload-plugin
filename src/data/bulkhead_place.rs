@@ -4,7 +4,7 @@ use crate::Table;
 
 // Структура с данными для bulkhead_place
 pub struct BulkheadPlace {
-    data: String,
+    data: Vec<Vec<String>>,
     parsed: Vec<(
         String,
         String,
@@ -20,7 +20,7 @@ pub struct BulkheadPlace {
 //
 impl BulkheadPlace {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(),
@@ -48,7 +48,7 @@ impl Table for BulkheadPlace {
     fn parse(&mut self) -> Result<(), Error> {
         //   dbg!(&self.data);
         println!("BulkheadPlace parse begin");
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 10).collect();
         data.remove(0);
         for line in data.into_iter() {
             if line.len() >= 10 {

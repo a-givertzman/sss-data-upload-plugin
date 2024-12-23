@@ -4,14 +4,14 @@ use crate::Table;
 
 /// Структура с данными горизонтальных поверхностей
 pub struct VerticalAreaStrength {
-    data: String,
+    data: Vec<Vec<String>>,
     /// name	area [m2]	X1 [m]	X2 [m]
     parsed: Vec<Vec<String>>,
 }
 //
 impl  VerticalAreaStrength {
     //
-    pub fn new(data: String) -> Self {
+    pub fn new(data: Vec<Vec<String>>,) -> Self {
         Self {
             data,
             parsed: Vec::new(), 
@@ -37,7 +37,7 @@ impl Table for VerticalAreaStrength  {
     //
     fn parse(&mut self) -> Result<(), Error> {
         println!("VerticalAreaStrength parse begin");
-        let mut data = crate::split_data(&self.data)?;
+        let mut data: Vec<Vec<String>> = self.data.clone().into_iter().filter(|s| s.len() >= 4).collect();
         data.remove(0);
         for row in data.into_iter() {  
             if row.len() != 4 {
