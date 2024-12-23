@@ -36,11 +36,11 @@ impl Table for Compartment {
             .data
             .iter()
             .filter(|v| {
-                v.len() >= 4
-                    && match v[3].parse::<f64>() {
-                        Ok(mass) => mass > 0.,
-                        Err(_) => false,
-                    }
+                v.len() >= 4 && {
+                    let mass = v[3].parse::<f64>().unwrap_or(0.);
+                    let use_max = v[4].as_str().contains("max");
+                    mass > 0. || use_max
+                }
             })
             .map(|v| {
                 (
