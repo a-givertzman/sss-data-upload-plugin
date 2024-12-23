@@ -103,7 +103,7 @@ impl Parser {
         ));
         compartment.parse()?;
         self.parsed_data
-            .insert("compartment_curve".to_owned(), compartment);
+            .insert("compartment".to_owned(), compartment);
 
         {
             let data = self.get_hash_map("Loads", "CargoData.xlsx");
@@ -124,6 +124,7 @@ impl Parser {
                     .ok_or(Error::FromString(format!(
                         "Parser convert error: no CargoCompartmentsParts!"
                     )))?;
+                dbg!(data);
                 let mut table = Box::new(HoldPart::new(data.to_owned()));
                 table.parse()?;
                 self.parsed_data
@@ -142,14 +143,14 @@ impl Parser {
             }
             {
                 let data = data
-                    .get("GrainBulkheadsPlace")
+                    .get("GrainBulkheads")
                     .ok_or(Error::FromString(format!(
-                        "Parser convert error: no GrainBulkheadsPlace!"
+                        "Parser convert error: no GrainBulkheads!"
                     )))?;
                 let mut table = Box::new(Bulkhead::new(data.to_owned()));
                 table.parse()?;
                 self.parsed_data
-                    .insert("GrainBulkheadsPlace".to_owned(), table);
+                    .insert("GrainBulkheads".to_owned(), table);
             }
         }
 
@@ -193,8 +194,8 @@ impl Parser {
                 self.parsed_data.insert("StrengthLimSea".to_owned(), table);
             }
             {
-                let data = data.get("StrengthLimSea").ok_or(Error::FromString(format!(
-                    "Parser convert error: no StrengthLimSea!"
+                let data = data.get("StrengthLimHarbor").ok_or(Error::FromString(format!(
+                    "Parser convert error: no StrengthLimHarbor!"
                 )))?;
                 let mut table =
                     Box::new(StrengthForceLimit::new(
@@ -205,7 +206,7 @@ impl Parser {
                         ))?),
                     ));
                 table.parse()?;
-                self.parsed_data.insert("StrengthLimSea".to_owned(), table);
+                self.parsed_data.insert("StrengthLimHarbor".to_owned(), table);
             }
         }
 
@@ -232,7 +233,7 @@ impl Parser {
         self.parsed_data.insert("LoadLine".to_owned(), load_line);
 
         {
-            let data = self.get_hash_map("Stability", "Wintage.xlsx");
+            let data = self.get_hash_map("Stability", "Windage.xlsx");
             {
                 let data = data.get("Windage").ok_or(Error::FromString(format!(
                     "Parser convert error: no Windage!"

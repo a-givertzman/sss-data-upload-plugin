@@ -49,6 +49,11 @@ impl Table for DraftMark {
                 .iter()
                 .zip(names.iter())
                 .enumerate()
+                .filter(|(i, _)| {
+                    let x: Result<f64, _> = v[1 + i * 2].parse();
+                    let y: Result<f64, _> = v[2 + i * 2].parse();
+                    x.is_ok() && y.is_ok()
+                })
                 .for_each(|(i, (mark_id, name))| {
                     self.parsed.push((
                         mark_id.to_string(),

@@ -27,8 +27,8 @@ impl StrengthForceLimit {
     //
     fn to_string(&self, id: usize) -> String {
         //    dbg!(&self.parsed);
-        let mut result = format!("DELETE FROM strength_force_limit WHERE ship_id={id};\n\n");
         let limit_area = self.limit_area.clone();
+        let mut result = format!("DELETE FROM strength_force_limit WHERE ship_id={id} AND limit_area='{limit_area}';\n\n");
         result += "INSERT INTO strength_force_limit\n  ( \
                 ship_id, \
                 frame_x, \

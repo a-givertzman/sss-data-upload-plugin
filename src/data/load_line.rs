@@ -8,13 +8,13 @@ use std::thread::sleep;
 pub struct LoadLine {
     data: Vec<Vec<String>>,
     /// Осадки
-    /// id | name_rus | name_engl | X | Y | Z
+    /// id | name_engl | name_rus | X | Y | Z
     load_line: Vec<(String, String, String, String, String, String)>,
     /// Винты
-    /// id | name_rus | name_engl | X | Y | Z | D
+    /// id | name_engl | name_rus | X | Y | Z | D
     screw: Vec<(String, String, String, String, String, String, String)>,
     /// Высота на носовом перпендикуляре
-    /// id | name_rus | name_engl | X | Y | Z
+    /// id | name_engl | name_rus | X | Y | Z
     perpendicular: Vec<(String, String, String, String, String, String)>,
 }
 ///
@@ -34,7 +34,7 @@ impl LoadLine {
         result += &format!("INSERT INTO load_line\n  (ship_id, criterion_id, name_rus, name_engl, x, y, z)\nVALUES\n");
         self.load_line
             .iter()
-            .for_each(|(criterion_id, name_rus, name_engl, x, y, z)| {
+            .for_each(|(criterion_id, name_engl, name_rus, x, y, z)| {
                 result += &format!(
                     "  ({ship_id}, {criterion_id}, '{name_rus}', '{name_engl}', {x}, {y}, {z}),\n"
                 );
@@ -49,7 +49,7 @@ impl LoadLine {
     fn screw(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM screw WHERE ship_id={ship_id};\n\n");
         result += &format!("INSERT INTO screw\n  (ship_id, criterion_id, name_rus, name_engl, x, y, z, d)\nVALUES\n");
-        self.screw.iter().for_each(|(criterion_id, name_rus, name_engl, x, y, z, d)| {
+        self.screw.iter().for_each(|(criterion_id, name_engl, name_rus,  x, y, z, d)| {
             result += &format!("  ({ship_id}, {criterion_id}, '{name_rus}', '{name_engl}', {x}, {y}, {z}, {d}),\n");
         });
         result.pop();
@@ -64,7 +64,7 @@ impl LoadLine {
         result += &format!("INSERT INTO bow_board\n  (ship_id, criterion_id, name_rus, name_engl, x, y, z)\nVALUES\n");
         self.perpendicular
             .iter()
-            .for_each(|(criterion_id, name_rus, name_engl, x, y, z)| {
+            .for_each(|(criterion_id, name_engl, name_rus, x, y, z)| {
                 result += &format!(
                     "  ({ship_id}, {criterion_id}, '{name_rus}', '{name_engl}', {x}, {y}, {z}),\n"
                 );
