@@ -1,8 +1,6 @@
 //! Класс-коллекция таблиц. Проверяет данные и выполняет их запись
 use crate::error::Error;
 use crate::parse_tests;
-use crate::parse_tests::BulkCargo;
-use crate::parse_tests::ShipGeneral;
 use crate::ApiServer;
 use crate::BonjeanFrame;
 use crate::Bulkhead;
@@ -327,14 +325,16 @@ impl Parser {
                     .iter()
                     .map(|v| v.iter().map(|v| v.to_string()).collect())
                     .collect();
-                match tag.to_lowercase().as_str() {
+                match tag.as_str() {
                     text => {
                         let mut table: Box<dyn Table> = match text {
-                            "general" => Box::new(ShipGeneral::new(data)),
-                            "compartments" => Box::new(parse_tests::Compartment::new(data)),
-                            "bulkcargo" => Box::new(BulkCargo::new(data)),
-                            "grainbulkheads" => Box::new(parse_tests::GrainBulkheads::new(data)),
-                            "stores" => Box::new(parse_tests::Stores::new(data)),
+                            "General" => Box::new(parse_tests::ShipGeneral::new(data)),
+                            "Compartments" => Box::new(parse_tests::Compartment::new(data)),
+                            "BulkCargo" => Box::new(parse_tests::BulkCargo::new(data)),
+                            "GeneralCargo" => Box::new(parse_tests::Cargo::new(data)),
+                            "ContainerCargo" => Box::new(parse_tests::Container::new(data)),
+                            "GrainBulkheads" => Box::new(parse_tests::GrainBulkheads::new(data)),                             
+                            "Stores" => Box::new(parse_tests::Stores::new(data)),
                             _ => continue,
                             //   _ => Err(Error::FromString(format!("Unknown tag: {text}")))?,
                         };
