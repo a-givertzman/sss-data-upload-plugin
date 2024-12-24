@@ -23,7 +23,7 @@ impl Container {
         result += &format!("DELETE FROM container WHERE ship_id={ship_id};\n\n");
         result += "INSERT INTO container\n  (project_id, ship_id, iso_code, max_gross_mass, gross_mass, tare_mass)\nVALUES\n  (NULL, 2, '1CC', 36.0, 12.0, 0.0);\n\n";        
         self.parsed.iter().for_each(|(bay_number, row_number, tier_number)| {
-            result += "UPDATE\n  container_slot\nSET\n  container_id = 5\nWHERE\n\n";
+            result += "UPDATE\n  container_slot\nSET\n  container_id = 5\nWHERE\n";
             result += &format!("  ship_id = {ship_id} AND project_id IS NOT DISTINCT FROM NULL AND bay_number = {bay_number} AND row_number = {row_number} AND tier_number = {tier_number};\n\n");
         });
         result.pop();

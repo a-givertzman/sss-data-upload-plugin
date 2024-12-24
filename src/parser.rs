@@ -398,7 +398,7 @@ impl Parser {
             std::fs::create_dir_all(format!("../{ship_name}/hold/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/loads/"))?;
             std::fs::create_dir_all(format!("../{ship_name}/test/"))?;
-            self.write_data_to_file(ship_id, &ship_name)?;
+       //     self.write_data_to_file(ship_id, &ship_name)?;
             self.write_tests_to_file(ship_id, &ship_name)?;
         } else {
             return Err(Error::FromString(
@@ -455,15 +455,6 @@ impl Parser {
                 .for_each(|s| tests += &s);
             tests += "\n\n";
             tables
-                .get("Stores")
-                .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table Stores!"
-                )))?
-                .to_sql(ship_id)
-                .iter()
-                .for_each(|s| tests += &s);
-            tests += "\n\n";
-            tables
                 .get("GrainBulkheads")
                 .ok_or(Error::FromString(format!(
                     "Parser write_to_file tests error: no table GrainBulkheads!"
@@ -472,33 +463,30 @@ impl Parser {
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
-            tables
-                .get("BulkCargo")
-                .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table BulkCargo!"
-                )))?
-                .to_sql(ship_id)
-                .iter()
-                .for_each(|s| tests += &s);
-            tests += "\n\n";
-            tables
-            .get("Cargo")
-            .ok_or(Error::FromString(format!(
-                "Parser write_to_file tests error: no table Cargo!"
-            )))?
-            .to_sql(ship_id)
-            .iter()
-            .for_each(|s| tests += &s);
-            tests += "\n\n";
-            tables
-            .get("ContainerCargo")
-            .ok_or(Error::FromString(format!(
-                "Parser write_to_file tests error: no table ContainerCargo!"
-            )))?
-            .to_sql(ship_id)
-            .iter()
-            .for_each(|s| tests += &s);
-            tests += "\n\n";
+            if let Some(table) = tables.get("Stores") {
+                table.to_sql(ship_id)
+                    .iter()
+                    .for_each(|s| tests += &s);
+                tests += "\n\n"; 
+            }
+            if let Some(table) = tables.get("BulkCargo") {
+                table.to_sql(ship_id)
+                    .iter()
+                    .for_each(|s| tests += &s);
+                tests += "\n\n"; 
+            }
+            if let Some(table) = tables.get("GeneralCargo") {
+                table.to_sql(ship_id)
+                    .iter()
+                    .for_each(|s| tests += &s);
+                tests += "\n\n"; 
+            }
+            if let Some(table) = tables.get("ContainerCargo") {
+                table.to_sql(ship_id)
+                    .iter()
+                    .for_each(|s| tests += &s);
+                tests += "\n\n"; 
+            }
             std::fs::write(format!("../{ship_name}/test/{file_name}.sql"), tests)
                 .expect("Unable to write file /test/data.sql");
             println!("{file_name} tests to_file end",);
@@ -509,7 +497,7 @@ impl Parser {
     }
     //
     fn get_hash_map(&self, sub_path: &str, filename: &str) -> HashMap<String, Vec<Vec<String>>> {
-        let path = self.data_path.clone() + sub_path + "/" + &self.file_name_prefix + filename;
+        let path = self.data_path.clone() + "/" + sub_path + "/" + &self.file_name_prefix + filename;
         let mut data: Xlsx<_> = open_workbook(&path).expect(&format!("Cannot open file {}", path));
         data.worksheets()
             .into_iter()
@@ -527,7 +515,7 @@ impl Parser {
     }
     //
     fn get_range_vec(&self, sub_path: &str, filename: &str) -> Vec<(String, Range<Data>)> {
-        let path = self.data_path.clone() + sub_path + "/" + &self.file_name_prefix + filename;
+        let path = self.data_path.clone() + "/" + sub_path + "/" + &self.file_name_prefix + filename;
         let mut data: Xlsx<_> = open_workbook(&path).expect(&format!("Cannot open file {}", path));
         data.worksheets()
             .into_iter()

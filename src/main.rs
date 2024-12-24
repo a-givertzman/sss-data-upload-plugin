@@ -18,7 +18,7 @@ fn main() {
     env_logger::init();
     info!("starting up");
     let mut parser = Parser::new(
-        "D:/myProgr/projects/rust/sss/assets/fleet/9245263_sofia/", 
+        "../sss/assets/fleet/9245263_sofia/", 
         "SSS_Sofia_",
         Rc::new(RefCell::new(ApiServer::new("sss-computing".to_owned()))),
     );
