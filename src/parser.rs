@@ -437,49 +437,67 @@ impl Parser {
             println!("{file_name} tests to_file begin",);
             let mut tests = String::new();
             tables
-                .get("general")
+                .get("General")
                 .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table general!"
+                    "Parser write_to_file tests error: no table General!"
                 )))?
                 .to_sql(ship_id)
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
             tables
-                .get("compartments")
+                .get("Compartments")
                 .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table general!"
+                    "Parser write_to_file tests error: no table Compartments!"
                 )))?
                 .to_sql(ship_id)
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
             tables
-                .get("stores")
+                .get("Stores")
                 .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table general!"
+                    "Parser write_to_file tests error: no table Stores!"
                 )))?
                 .to_sql(ship_id)
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
             tables
-                .get("grainbulkheads")
+                .get("GrainBulkheads")
                 .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table general!"
+                    "Parser write_to_file tests error: no table GrainBulkheads!"
                 )))?
                 .to_sql(ship_id)
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
             tables
-                .get("bulkcargo")
+                .get("BulkCargo")
                 .ok_or(Error::FromString(format!(
-                    "Parser write_to_file tests error: no table general!"
+                    "Parser write_to_file tests error: no table BulkCargo!"
                 )))?
                 .to_sql(ship_id)
                 .iter()
                 .for_each(|s| tests += &s);
+            tests += "\n\n";
+            tables
+            .get("Cargo")
+            .ok_or(Error::FromString(format!(
+                "Parser write_to_file tests error: no table Cargo!"
+            )))?
+            .to_sql(ship_id)
+            .iter()
+            .for_each(|s| tests += &s);
+            tests += "\n\n";
+            tables
+            .get("ContainerCargo")
+            .ok_or(Error::FromString(format!(
+                "Parser write_to_file tests error: no table ContainerCargo!"
+            )))?
+            .to_sql(ship_id)
+            .iter()
+            .for_each(|s| tests += &s);
             tests += "\n\n";
             std::fs::write(format!("../{ship_name}/test/{file_name}.sql"), tests)
                 .expect("Unable to write file /test/data.sql");
