@@ -463,6 +463,12 @@ impl Parser {
                 .iter()
                 .for_each(|s| tests += &s);
             tests += "\n\n";
+            if let Some(table) = tables.get("GeneralCargo") {
+                table.to_sql(ship_id)
+                    .iter()
+                    .for_each(|s| tests += &s);
+                tests += "\n\n"; 
+            }            
             if let Some(table) = tables.get("Stores") {
                 table.to_sql(ship_id)
                     .iter()
@@ -470,12 +476,6 @@ impl Parser {
                 tests += "\n\n"; 
             }
             if let Some(table) = tables.get("BulkCargo") {
-                table.to_sql(ship_id)
-                    .iter()
-                    .for_each(|s| tests += &s);
-                tests += "\n\n"; 
-            }
-            if let Some(table) = tables.get("GeneralCargo") {
                 table.to_sql(ship_id)
                     .iter()
                     .for_each(|s| tests += &s);
