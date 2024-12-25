@@ -22,13 +22,15 @@ impl Cargo {
     //  
     pub fn to_string(&self, ship_id: usize) -> String {
         let mut result = format!("DELETE FROM cargo WHERE ship_id={ship_id};\n\n");
-        result += "INSERT INTO cargo\n  (ship_id, name, mass, timber, is_on_deck, bound_x1, bound_x2, bound_y1, bound_y2, bound_z1, bound_z2,mass_shift_x, mass_shift_y, mass_shift_z, category_id)\nVALUES\n";
-        self.parsed.iter().for_each(|(name, mass, mass_shift_x, mass_shift_y, mass_shift_z, bound_x1, bound_x2, bound_y1, bound_y2, bound_z1, bound_z2)| {
-            result += &format!("  ({ship_id}, '{name}', {mass}, FALSE, TRUE, {bound_x1}, {bound_x2}, {bound_y1}, {bound_y2}, {bound_z1}, {bound_z2}, {mass_shift_x}, {mass_shift_y}, {mass_shift_z}, 10),\n");
-        });
-        result.pop();
-        result.pop();
-        result.push_str(";\n\n");
+        if !self.parsed.is_empty() {
+            result += "INSERT INTO cargo\n  (ship_id, name, mass, timber, is_on_deck, bound_x1, bound_x2, bound_y1, bound_y2, bound_z1, bound_z2,mass_shift_x, mass_shift_y, mass_shift_z, category_id)\nVALUES\n";
+            self.parsed.iter().for_each(|(name, mass, mass_shift_x, mass_shift_y, mass_shift_z, bound_x1, bound_x2, bound_y1, bound_y2, bound_z1, bound_z2)| {
+                result += &format!("  ({ship_id}, '{name}', {mass}, FALSE, TRUE, {bound_x1}, {bound_x2}, {bound_y1}, {bound_y2}, {bound_z1}, {bound_z2}, {mass_shift_x}, {mass_shift_y}, {mass_shift_z}, 10),\n");
+            });
+            result.pop();
+            result.pop();
+            result.push_str(";\n\n");
+        }
         result
     }
 }
