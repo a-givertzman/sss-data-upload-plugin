@@ -24,7 +24,7 @@ impl  HorizontalSurf {
         self.parsed
             .iter()
             .for_each(|row| {
-                result += &format!("  ({ship_id}, '{}', {}, {}, {}, {}),\n", row[0], row[1], row[3], row[2], row[4]);
+                result += &format!("  ({ship_id}, '{}', {}, {}, {}, {}),\n", row[0], row[1], row[3], row[4], row[2]);
             });
         result.pop();
         result.pop();
